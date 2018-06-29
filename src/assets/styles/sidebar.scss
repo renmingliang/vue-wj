@@ -1,0 +1,67 @@
+#app {
+
+  // 主体区域
+  .app-container {
+    transition: margin-left .28s;
+    margin-left: 180px;
+  }
+
+   // 侧边栏
+  .sidebar-container{
+    width: 180px;
+    background-color: #304156;
+    position: absolute;
+    left: 0;
+    top: 100px;
+    bottom: 0;
+    z-index: 10;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    // 滚动条容器宽度，隐藏滚动
+    &::-webkit-scrollbar{
+      width: 0px;
+    }
+    a {
+      display: block;
+      width: 100%;
+    }
+    .svg-icon {
+      margin-right: 16px;
+    }
+    .el-menu{
+      border-right: none;
+    }
+  }
+
+  .hideSidebar {
+    .sidebar-container,.el-menu--collapse {
+      width: 36px;
+    }
+    .app-container {
+      margin-left: 36px;
+    }
+    .submenu-title-noDropdown {
+      padding-left: 10px !important;
+      position: relative;
+      .el-tooltip {
+        padding: 0 10px !important;
+      }
+    }
+    .el-submenu {
+      &>.el-submenu__title {
+        padding-left: 10px !important;
+        &>span {
+          height: 0;
+          width: 0;
+          overflow: hidden;
+          visibility: hidden;
+          display: inline-block;
+        }
+        .el-submenu__icon-arrow {
+          display: none;
+        }
+      }
+    }
+  }
+}

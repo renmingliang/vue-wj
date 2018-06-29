@@ -1,0 +1,136 @@
+//全局样式
+html, #app{
+  min-width: 1080px;
+  height: 100%;
+}
+.not-allow{
+  color: #999 !important;
+  cursor: not-allowed !important;
+}
+.inline{
+  display: inline-block;
+}
+.float-left{
+  float: left;
+}
+.float-right{
+  float: right;
+}
+.text-left{
+  text-align: left;
+}
+.text-center{
+  text-align: center;
+}
+.text-right{
+  text-align: right;
+}
+.clearfix {
+  &:after {
+    visibility: hidden;
+    display: block;
+    font-size: 0;
+    content: " ";
+    clear: both;
+    height: 0;
+  }
+}
+
+.common-wrap{
+  padding: 20px;
+  &+&{
+    margin-top: 30px;
+  }
+}
+
+.custom-dialog-form{
+  width: 550px;
+  .el-form-item__content{
+    max-width: 330px;
+  }
+}
+
+.search-container{
+  .search-filter{
+    .el-form-item__content{
+      max-width: 330px;
+    }
+    background: #fff;
+    .line{
+      text-align: center;
+    }
+  }
+  .search-result{
+    background: #fff;
+    .cell>div+div{
+      margin-top: 10px;
+    }
+    .column-container{
+      .column-item+.column-item{
+        position: relative;
+        margin-top: 10px;
+        padding-top: 10px;
+        &:before{
+          position: absolute;
+          right: -10px;
+          top: 0;
+          left: -10px;
+          height: 1px;
+          content: '';
+          background-color: #ebeef5;
+        }
+      }
+    }
+    .hover-show{
+      .inline{
+        display: none;
+      }
+      &:hover{
+        .inline{
+          display: block;
+        }
+      }
+    }
+  }
+  .search-pagination{
+    margin-top: 30px;
+  }
+}
+
+.box-container{
+  .common-wrap{
+    padding: 20px 50px 0 20px;
+  }
+  .custom-btn{
+    margin: 10px 0 20px;
+    .btn-add{
+      color: #fff;
+      background: #685762;
+    }
+  }
+}
+
+.shake{
+  border: 1px solid red !important;
+  animation: shake .4s linear;
+}
+@keyframes shake {
+  0% {
+    transform: translateX(-8px)
+  }
+  20% {
+    transform: translateX(8px)
+  }
+  40% {
+    transform: translateX(-4px)
+  }
+  60% {
+    transform: translateX(4px)
+  }
+  80% {
+    transform: translateX(-2px)
+  }
+  100% {
+    transform: translateX(0px)
+  }
+}
