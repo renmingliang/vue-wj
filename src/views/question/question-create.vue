@@ -193,7 +193,7 @@
                               :type="list.iType"
                               :value="option.value">
                               <label class="options-txt clearfix">
-                                <span class="options-value float-left">{{questionsLetters[ind]}}</span>
+                                <span class="options-value float-left">{{option.value}}</span>
                                 <div v-html="option.txt" class="float-left"></div>
                               </label>
                               <div class="options-tip">
@@ -307,7 +307,7 @@
                 </ul>
               </div>
               <div class="logic-right">
-                <p>则<strong>显示</strong>以下题目:</p>
+                <p>则<b> 显示 </b>以下题目:</p>
                 <ul class="logic-item">
                   <li
                     v-for="(list, index) in questions.lists"
@@ -343,7 +343,7 @@
                 </ul>
               </div>
               <div class="logic-right">
-                <p>则<strong>跳题</strong>至以下题目:</p>
+                <p>则<b> 跳题 </b>至以下题目:</p>
                 <ul class="logic-item">
                   <li
                     v-for="(list, index) in questions.lists"
@@ -359,7 +359,7 @@
             </div>
           </template>
           <template v-else>
-            <div>仅有<strong>单选题</strong>支持跳题逻辑设置</div>
+            <div>仅有<b> 单选题 </b>支持跳题逻辑设置</div>
           </template>
         </el-tab-pane>
       </el-tabs>
@@ -696,12 +696,15 @@ export default {
       const isAddInput = this.editorData[num][`${num}_addInput`]
       tempData.iTitle = this.editorData[num][`${num}_title`]
       tempData.iRemark = this.editorData[num][`${num}_remark`]
+      // 遍历处理选项
       tempData.iOptions.forEach((option, index) => {
         const temp = this.editorData[num][`${num}_${index + 1}`]
         if (!option.input && temp) {
           option.txt = temp
+          option.value = this.questionsLetters[index]
         }
       })
+      // 若存在矩阵题
       if (tempData.iSubTitles) {
         tempData.iSubTitles.forEach((subtitle, index) => {
           const temp = this.editorData[num][`${num}_${index + 1}_subtitle`]
@@ -713,6 +716,7 @@ export default {
       // 若含有其他项，则将其追加到选项中
       if (this.addInput[num] && isAddInput) {
         tempData.iOptions.push({
+          'value': this.questionsLetters[tempData.iOptions.length],
           'txt': isAddInput,
           'input': true,
           'placeholder': '请输入内容'
@@ -778,11 +782,7 @@ export default {
         console.log('添加选项')
         const len = options.length
         addEditorId = `${num}_${len + 1}`
-        if (this.addInput[num]) {
-          options.splice(len - 2, 0, {'txt': '选项'})
-        } else {
-          options.splice(len, 0, {'txt': '选项'})
-        }
+        options.push({'txt': '选项'})
       } else {
         console.log('添加其他')
         if (this.addInput[num]) return false
@@ -798,11 +798,7 @@ export default {
       if (ind > -1) {
         console.log('删除该选项')
         const len = options.length
-        if (this.addInput[num]) {
-          removeEditorId = `${num}_${len - 1}`
-        } else {
-          removeEditorId = `${num}_${len}`
-        }
+        removeEditorId = `${num}_${len}`
         options.splice(ind, 1)
         options.forEach((option, index) => {
           if (ind <= index) {
@@ -839,7 +835,7 @@ export default {
         this.questions.lists[num - 1] = this.optionClone
         this.editorData[num] = this.editorClone
       }
-      // 考虑添加其他项，但未报存情况，需要去除
+      // 考虑添加其他项，但未保存情况，需要去除
       const isAddInput = this.editorData[num][`${num}_addInput`]
       if (!isAddInput) {
         this.$set(this.addInput, num, false)
