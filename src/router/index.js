@@ -65,6 +65,48 @@ export const asyncRouterMap = [
         name: 'question-list',
         component: _import('question/question-list'),
         meta: { title: '问卷列表', code: 'question-list' }
+      },
+      {
+        path: 'question-setting/:id',
+        name: 'question-setting',
+        hidden: true,
+        component: _import('question/question-setting'),
+        meta: { title: '问卷设置', code: 'question-setting' }
+      },
+      {
+        path: 'question-preview/:id',
+        name: 'question-preview',
+        hidden: true,
+        component: _import('question/question-preview'),
+        meta: { title: '问卷预览', code: 'question-preview' }
+      },
+      {
+        path: 'question-edit/:id',
+        name: 'question-edit',
+        hidden: true,
+        component: _import('question/question-edit'),
+        meta: { title: '问卷编辑', code: 'question-edit' }
+      },
+      {
+        path: 'question-handle/:id',
+        name: 'question-handle',
+        hidden: true,
+        component: _import('question/question-handle'),
+        meta: { title: '问卷操作', code: 'question-handle' }
+      },
+      {
+        path: 'question-download/:id',
+        name: 'question-download',
+        hidden: true,
+        component: _import('question/question-download'),
+        meta: { title: '问卷下载', code: 'question-download' }
+      },
+      {
+        path: 'question-analyse/:id',
+        name: 'question-analyse',
+        hidden: true,
+        component: _import('question/question-analyse'),
+        meta: { title: '问卷分析', code: 'question-analyse' }
       }
     ]
   },
@@ -94,7 +136,7 @@ export const asyncRouterMap = [
         path: 'project',
         name: 'project',
         component: _import('project/project'),
-        meta: { title: '项目设置', code: 'project' }
+        meta: { title: '项目管理', code: 'project' }
       },
       {
         path: 'permission',

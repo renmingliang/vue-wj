@@ -1,13 +1,13 @@
 <template>
   <div>
-    欢迎使用问卷调研平台
+    问卷编辑
   </div>
 </template>
 
 <script>
 
 export default {
-  name: 'index',
+  name: 'question-edit',
   data() {
     return {}
   },

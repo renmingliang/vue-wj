@@ -33,11 +33,7 @@ export function deepClone(params) {
  */
 export const localData = {
   set: function (key, val) {
-    if (typeof val === 'string') {
-      localStorage.setItem(key, val)
-    } else {
-      localStorage.setItem(key, JSON.stringify(val))
-    }
+    localStorage.setItem(key, JSON.stringify(val))
   },
   get: function (key) {
     const res = localStorage.getItem(key)

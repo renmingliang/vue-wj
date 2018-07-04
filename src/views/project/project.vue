@@ -4,9 +4,9 @@
       <el-form ref="form" :model="listQuery" label-width="120px">
         <el-row :gutter="30">
           <el-col :span="8">
-            <el-form-item label="项目名称">
+            <el-form-item label="游戏列表">
               <el-select
-                v-model="listQuery.pid"
+                v-model="listQuery.p_name_system"
                 placeholder="请选择">
                 <el-option v-for="item in typeTopOptions" :label="item.label" :value="item.value" :key="item.value"></el-option>
               </el-select>
@@ -33,11 +33,13 @@
         label-width="110px"
         :model="ruleForm">
         <el-form-item
-          label="项目名称"
-          prop="pid">
+          label="游戏列表"
+          prop="p_name_system">
           <el-select
             :disabled="isLook"
-            v-model="ruleForm.pid"
+            multiple
+            collapse-tags
+            v-model="ruleForm.p_name_system"
             placeholder="请选择">
             <el-option
               v-for="item in adaptationTop"
@@ -47,10 +49,16 @@
             </el-option>
           </el-select>
         </el-form-item>
+
+        <el-form-item
+          label="项目名称"
+          prop="pid">
+          <el-input v-model="ruleForm.pid"></el-input>
+        </el-form-item>
         <el-form-item
           label="备注"
-          prop="name">
-          <el-input v-model="ruleForm.name" type="textarea" :autosize="{ minRows: 2 }"></el-input>
+          prop="desc">
+          <el-input v-model="ruleForm.desc" type="textarea" :autosize="{ minRows: 2 }"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -80,9 +88,14 @@
           align="center">
         </el-table-column>
         <el-table-column
+          prop="p_name_system"
+          label="游戏列表"
+          align="center">
+        </el-table-column>
+        <el-table-column
           label="备注"
           align="center">
-            <template slot-scope="scope">{{ scope.row.name }}</template>
+            <template slot-scope="scope">{{ scope.row.desc }}</template>
         </el-table-column>
         <el-table-column
           label="操作"
@@ -111,19 +124,19 @@ const defalutOptions = [
   {label: '全部', value: '0'}
 ]
 const defaultData = [
-  {pid: '1', p_name: '项目1', name: '备注1'},
-  {pid: '2', p_name: '项目2', name: '备注2'},
-  {pid: '3', p_name: '项目3', name: '备注3'},
-  {pid: '4', p_name: '项目4', name: '备注4'},
-  {pid: '5', p_name: '项目5', name: '备注5'},
-  {pid: '6', p_name: '项目6', name: '备注6'}
+  {pid: '1', p_name: '项目1', p_name_system: ['妖精的尾巴-ios'], desc: '备注1'},
+  {pid: '2', p_name: '项目2', p_name_system: ['妖精的尾巴-ios'], desc: '备注2'},
+  {pid: '3', p_name: '项目3', p_name_system: ['妖精的尾巴-ios'], desc: '备注3'},
+  {pid: '4', p_name: '项目4', p_name_system: ['妖精的尾巴-ios'], desc: '备注4'},
+  {pid: '5', p_name: '项目5', p_name_system: ['妖精的尾巴-ios'], desc: '备注5'},
+  {pid: '6', p_name: '项目6', p_name_system: ['妖精的尾巴-ios'], desc: '备注6'}
 ]
 
 export default {
   data() {
-    const validateAdaptationName = (rule, value, callback) => {
+    const validateDesc = (rule, value, callback) => {
       if (!value) {
-        callback(new Error('请输入项目名称'))
+        callback(new Error('请输入备注信息'))
       } else if (value.length > 20) {
         callback(new Error('输入内容不得超过20个字符'))
       } else {
@@ -139,18 +152,22 @@ export default {
       ruleFormTitle: '添加项目',
       ruleForm: {
         pid: '',
-        name: '',
+        p_name_system: [],
+        desc: '',
         id: ''
       },
       listQuery: {
-        pid: ''
+        p_name_system: ''
       },
       rules: {
         pid: [
-          {required: true, message: '请选择项目名称', trigger: 'change'}
+          {required: true, message: '请输入项目名称', trigger: 'change'}
         ],
-        name: [
-          { required: true, trigger: 'blur', validator: validateAdaptationName }
+        p_name_system: [
+          {required: true, message: '请选择游戏列表', trigger: 'blur'}
+        ],
+        desc: [
+          { required: true, trigger: 'blur', validator: validateDesc }
         ]
       }
     }
@@ -233,7 +250,8 @@ export default {
         // 初始化类别数据
         this.ruleForm = {
           pid: '',
-          name: '',
+          p_name_system: [],
+          desc: '',
           id: ''
         }
       } else {
@@ -242,8 +260,9 @@ export default {
         this.postType = 'ADAPTATION_UPDATE'
         // 填充对应类别数据
         this.ruleForm = {
+          p_name_system: row.p_name_system,
           pid: row.pid,
-          name: row.name,
+          desc: row.desc,
           id: row.id
         }
       }

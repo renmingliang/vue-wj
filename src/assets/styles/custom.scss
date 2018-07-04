@@ -3,19 +3,10 @@ html, #app{
   min-width: 1080px;
   height: 100%;
 }
-.not-allow{
-  color: #999 !important;
-  cursor: not-allowed !important;
-}
 .inline{
   display: inline-block;
 }
-.float-left{
-  float: left;
-}
-.float-right{
-  float: right;
-}
+
 .text-left{
   text-align: left;
 }
@@ -24,6 +15,13 @@ html, #app{
 }
 .text-right{
   text-align: right;
+}
+
+.float-left{
+  float: left;
+}
+.float-right{
+  float: right;
 }
 .clearfix {
   &:after {
@@ -36,10 +34,37 @@ html, #app{
   }
 }
 
+.text-ellipsis{
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.red{
+  color: red;
+}
+
+.not-allow{
+  color: #999 !important;
+  cursor: not-allowed !important;
+}
+
 .common-wrap{
   padding: 20px;
   &+&{
     margin-top: 30px;
+  }
+}
+
+.hover-show{
+  .hover-link{
+    padding: 8px 0;
+    display: inline-block;
+  }
+  &:hover{
+    .hover-link{
+      text-decoration: underline;
+    }
   }
 }
 
@@ -48,6 +73,10 @@ html, #app{
   .el-form-item__content{
     max-width: 330px;
   }
+}
+
+.search-pagination{
+  margin-top: 30px;
 }
 
 .search-container{
@@ -81,19 +110,6 @@ html, #app{
         }
       }
     }
-    .hover-show{
-      .inline{
-        display: none;
-      }
-      &:hover{
-        .inline{
-          display: block;
-        }
-      }
-    }
-  }
-  .search-pagination{
-    margin-top: 30px;
   }
 }
 

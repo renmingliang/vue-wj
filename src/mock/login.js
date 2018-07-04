@@ -30,6 +30,36 @@ const userMap = {
             code: 'question-list',
             type: 'menu',
             title: '问卷列表'
+          },
+          {
+            code: 'question-setting',
+            type: 'menu',
+            title: '问卷设置'
+          },
+          {
+            code: 'question-preview',
+            type: 'menu',
+            title: '问卷预览'
+          },
+          {
+            code: 'question-edit',
+            type: 'menu',
+            title: '问卷编辑'
+          },
+          {
+            code: 'question-download',
+            type: 'menu',
+            title: '问卷下载'
+          },
+          {
+            code: 'question-analyse',
+            type: 'menu',
+            title: '问卷分析'
+          },
+          {
+            code: 'question-handle',
+            type: 'menu',
+            title: '问卷操作'
           }
         ]
       },

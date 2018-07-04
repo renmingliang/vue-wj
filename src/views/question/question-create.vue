@@ -13,8 +13,8 @@
       </div>
       <div class="topbar-action">
         <el-button-group>
-          <el-button type="primary" icon="el-icon-arrow-left">上一步</el-button>
-          <el-button type="primary">下一步<i class="el-icon-arrow-right el-icon--right"></i></el-button>
+          <el-button type="primary" icon="el-icon-arrow-left">返回</el-button>
+          <el-button type="primary">保存至草稿箱</el-button>
           <el-button @click="saveQuestions" type="primary" icon="el-icon-view">预览</el-button>
         </el-button-group>
       </div>
@@ -70,7 +70,7 @@
                       <div class="row">
                         <div class="row-content">
                           <el-checkbox v-model="list.iRequired">必填</el-checkbox>
-                          <el-input v-if="list.iType === 'textarea'" v-model="list.inputMax" placeholder="输入字数长度限定"></el-input>
+                          <el-input v-if="list.iType === 'textarea'" v-model="list.iMaxlength" placeholder="输入字数长度限定"></el-input>
                         </div>
                       </div>
                       <div class="row">
@@ -99,7 +99,7 @@
                                   </div>
                                   <div class="btn-del-option">
                                     <span @click="delOption(index+1, list.iOptions)"><i class="el-icon-delete"></i></span>
-                                    <span @click="ruleOther(index+1)"><i class="el-icon-setting"></i></span>
+                                    <span @click="ruleOther(index+1, list.iRuleOther)"><i class="el-icon-setting"></i></span>
                                   </div>
                                 </li>
                               </ul>
@@ -211,6 +211,7 @@
                               <textarea
                                 class="options-input"
                                 v-if="option.input"
+                                :maxlength="list.iRuleOther.maxlength"
                                 :placeholder="option.placeholder"
                                 rows="3"></textarea>
                             </div>
@@ -253,6 +254,7 @@
                               :key="ind">
                               <textarea
                                 class="options-input"
+                                :maxlength="list.iMaxlength"
                                 :placeholder="option.placeholder"
                                 rows="3"
                                 ></textarea>
@@ -285,24 +287,46 @@
       </div>
     </div>
 
+    <el-dialog
+      title="填空设置"
+      :visible.sync="dialogOtherVisible"
+      center
+      custom-class="custom-dialog-form">
+      <el-form
+        ref="otherForm"
+        label-width="110px"
+        :model="otherForm">
+        <el-form-item label="最多填写">
+          <el-input-number v-model="otherForm.maxlength" :min="0"></el-input-number>
+        </el-form-item>
+        <el-form-item label="是否必填">
+          <el-checkbox v-model="otherForm.required"></el-checkbox>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogOtherVisible = false">取 消</el-button>
+        <el-button type="primary" @click="submitOtherForm">确 定</el-button>
+      </div>
+    </el-dialog>
+
     <el-dialog title="逻辑设置" :visible.sync="dialogVisible">
       <el-tabs
         v-model="logicType"
-        :before-leave="beforeToggle"
-        @tab-click="toggleLogicType">
+        :before-leave="beforeToggle">
         <el-tab-pane label="显示逻辑" name="display">
-          <template v-if="displayData.iType === 'radio' || displayData.iType === 'checkbox'">
+          <template v-if="logicData.iType === 'radio' || logicData.iType === 'checkbox'">
             <div class="logic-container">
               <div class="logic-left">
                 <p>当用户选择本题选项:</p>
                 <ul class="logic-item">
                   <li
                     class="clearfix"
-                    v-for="(item, index) in displayData.iOptions"
-                    @click="handleDisplay(item)"
+                    v-for="(option, index) in logicData.iOptions"
+                    :class="logicIndex === index ? 'logic-active' : ''"
+                    @click="handleDisplay(option, index)"
                     :key="index">
-                      <span class="float-left">{{questionsLetters[index]}}. </span>
-                      <div v-html="item.txt" class="float-left"></div>
+                      <span class="float-left">{{option.value}}. </span>
+                      <div v-html="option.txt" class="float-left"></div>
                   </li>
                 </ul>
               </div>
@@ -311,9 +335,9 @@
                 <ul class="logic-item">
                   <li
                     v-for="(list, index) in questions.lists"
-                    @click="toggleDisplay(list, index + 1)"
+                    @click="toggleDisplay(list, $event)"
                     class="clearfix"
-                    :class="index <= questions.lists.indexOf(displayData)? 'not-allow' : ''"
+                    :class="index <= questions.lists.indexOf(logicData)? 'not-allow' : (logicActive[logicIndex].includes(list.iID)?'logic-active':'')"
                     :key="index">
                     <span class="float-left">{{index+1}}. </span>
                     <div v-html="list.iTitle" class="float-left"></div>
@@ -327,18 +351,18 @@
           </template>
         </el-tab-pane>
         <el-tab-pane label="跳题逻辑" name="goto">
-          <template v-if="displayData.iType === 'radio'">
+          <template v-if="logicData.iType === 'radio'">
             <div class="logic-container">
               <div class="logic-left">
                 <p>当用户选择本题选项:</p>
                 <ul class="logic-item">
                   <li
                     class="clearfix"
-                    v-for="(item, index) in displayData.iOptions"
-                    @click="handleDisplay(item)"
+                    v-for="(option, index) in logicData.iOptions"
+                    @click="handleDisplay(option, index)"
                     :key="index">
-                      <span class="float-left">{{questionsLetters[index]}}. </span>
-                      <div v-html="item.txt" class="float-left"></div>
+                      <span class="float-left">{{option.value}}. </span>
+                      <div v-html="option.txt" class="float-left"></div>
                   </li>
                 </ul>
               </div>
@@ -347,9 +371,9 @@
                 <ul class="logic-item">
                   <li
                     v-for="(list, index) in questions.lists"
-                    @click="toggleDisplay(list, index + 1)"
+                    @click="toggleDisplay(list, $event)"
                     class="clearfix"
-                    :class="index <= questions.lists.indexOf(displayData)? 'not-allow' : ''"
+                    :class="index <= questions.lists.indexOf(logicData)? 'not-allow' : (logicActive[logicIndex].includes(list.iID)?'logic-active':'')"
                     :key="index">
                     <span class="float-left">{{index+1}}. </span>
                     <div v-html="list.iTitle" class="float-left"></div>
@@ -364,8 +388,8 @@
         </el-tab-pane>
       </el-tabs>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+        <el-button @click="logicCancel">取 消</el-button>
+        <el-button type="primary" @click="logicConfirm">确 定</el-button>
       </div>
     </el-dialog>
 
@@ -376,24 +400,27 @@
 import Sticky from '@/components/Sticky'
 import { deepClone } from '@/utils'
 import draggable from 'vuedraggable'
-// import questions from '@/utils/question'
 
 export default {
-  name: 'question',
+  name: 'question-create',
   data() {
     return {
       isEdit: false,
       isCreate: false,
       loading: false,
       dialogVisible: false,
+      dialogOtherVisible: false,
       logicType: 'display',
-      editorCom: ['title', 'prefix', 'suffix'],
+      logicIndex: '',
+      logicActive: {},
+      logicData: {},
+      otherForm: {},
       addInput: {},
       editorNum: {},
-      displayData: {},
       editorData: {},
       editorClone: null,
       optionClone: null,
+      editorCom: ['title', 'prefix', 'suffix'],
       questionsType: [
         {
           iCode: 1,
@@ -401,11 +428,15 @@ export default {
           iType: 'radio',
           iTitle: '单选题',
           iRequired: true,
+          iRuleOther: {
+            'maxlength': '',
+            'required': false
+          },
           iOptions: [
             {
               'txt': '选项',
-              'goto': '4',
-              'display': '4,5,6'
+              'goto': '',
+              'display': ''
             },
             {
               'txt': '选项',
@@ -419,8 +450,12 @@ export default {
           iFrom: '',
           iType: 'checkbox',
           iTitle: '多选题',
-          maxlength: '',
+          iMaxlength: '',
           iRequired: true,
+          iRuleOther: {
+            'maxlength': '',
+            'required': false
+          },
           iOptions: [
             {
               'txt': '选项',
@@ -437,7 +472,7 @@ export default {
           iFrom: '',
           iType: 'textarea',
           iTitle: '填空题',
-          maxlength: '',
+          iMaxlength: '',
           iRequired: true,
           iOptions: [
             {
@@ -509,7 +544,25 @@ export default {
   created() {
     this.initCKEditor()
   },
+  destroyed() {
+    this.destoryCKEditor()
+  },
   methods: {
+    // 初始化公用富文本框
+    initCKEditor() {
+      this.$nextTick(() => {
+        this.editorCom.forEach(item => {
+          this.CKEDITOR.inline(item)
+        })
+      })
+    },
+    // 摧毁所有富文本框
+    destoryCKEditor() {
+      Object.values(this.CKEDITOR.instances).forEach(instace => {
+        instace.destroy()
+      })
+    },
+    // 拖拽结束
     dragItem(evt) {
       const oldNum = evt.oldIndex + 1
       const newNum = evt.newIndex + 1
@@ -574,18 +627,62 @@ export default {
       this.setDataEditor(num)
     },
     logicItem(item) {
+      this.logicData = item
+      // 默认处理第一项
+      this.logicChange()
       this.dialogVisible = true
-      this.displayData = item
       console.log('逻辑设置', item)
     },
-    handleDisplay(val) {
-      console.log(val)
+    logicChange(index) {
+      const tempInd = index || 0
+      this.logicIndex = tempInd
+      // 临时保存逻辑题数据
+      if (!this.logicActive[tempInd]) {
+        const tempData = this.logicData.iOptions[tempInd][this.logicType]
+        const changeData = tempData ? tempData.split(',') : []
+        // 注意这里需要修改为观察数据格式，控制页面logic-active的渲染
+        this.$set(this.logicActive, tempInd, changeData)
+      }
     },
-    toggleDisplay(item, num) {
-      console.log(item, num)
+    handleDisplay(val, index) {
+      console.log(val, index)
+      this.logicChange(index)
     },
-    toggleLogicType(tab, event) {
-      console.log(tab, event)
+    toggleDisplay(item, e) {
+      console.log(item, e)
+      // 阻止禁选项
+      const isNotAllow = e.currentTarget.classList.contains('not-allow')
+      if (isNotAllow) return false
+      // 获取题号自身ID
+      const tempID = item.iID
+      const tempInd = this.logicActive[this.logicIndex].indexOf(tempID)
+      if (tempInd > -1) {
+        this.logicActive[this.logicIndex].splice(tempInd, 1)
+      } else {
+        if (this.logicType === 'display') {
+          this.logicActive[this.logicIndex].push(tempID)
+        } else {
+          // 跳题默认只能选一项
+          this.logicActive[this.logicIndex][0] = tempID
+        }
+      }
+    },
+    logicConfirm() {
+      console.log(this.logicActive)
+      Object.values(this.logicActive).forEach((item, index) => {
+        this.logicData.iOptions[index][this.logicType] = item.join()
+      })
+      this.dialogVisible = false
+    },
+    logicCancel() {
+      this.logicReset()
+      this.dialogVisible = false
+    },
+    logicReset() {
+      // 重置清空
+      Object.keys(this.logicActive).forEach(key => {
+        this.$set(this.logicActive, key, [])
+      })
     },
     beforeToggle(activeName, oldActiveName) {
       return this.$confirm(`切换到${activeName}逻辑设置后，问卷现有的${oldActiveName}逻辑设置将会失效，是否继续操作？`)
@@ -646,14 +743,6 @@ export default {
     saveQuestions() {
       console.log('保存', this.questions)
     },
-    initCKEditor() {
-      // 初始化公用富文本框
-      this.$nextTick(() => {
-        this.editorCom.forEach(item => {
-          this.CKEDITOR.inline(item)
-        })
-      })
-    },
     createEditor() {
       const that = this
       // 先摧毁
@@ -696,6 +785,10 @@ export default {
       const isAddInput = this.editorData[num][`${num}_addInput`]
       tempData.iTitle = this.editorData[num][`${num}_title`]
       tempData.iRemark = this.editorData[num][`${num}_remark`]
+      // 处理当前题号ID
+      if (!tempData.iID) {
+        tempData.iID = `q_${num}`
+      }
       // 遍历处理选项
       tempData.iOptions.forEach((option, index) => {
         const temp = this.editorData[num][`${num}_${index + 1}`]
@@ -818,8 +911,14 @@ export default {
       delete this.editorData[num][removeEditorId]
       this.CKEDITOR.instances[removeEditorId].destroy()
     },
-    ruleOther(num) {
-      console.log('校验其他项规则')
+    ruleOther(num, other) {
+      console.log('设置其他项规则')
+      this.otherForm = other
+      this.dialogOtherVisible = true
+    },
+    submitOtherForm() {
+      console.log('提交其他项规则', this.otherForm)
+      this.dialogOtherVisible = false
     },
     confirmEditor(num) {
       console.log('确定', num)
@@ -857,6 +956,12 @@ export default {
   components: {
     draggable,
     Sticky
+  },
+  watch: {
+    // 监听逻辑类型变化并重置
+    logicType(val) {
+      this.logicReset()
+    }
   }
 }
 </script>
@@ -891,6 +996,13 @@ export default {
   .logic-item{
     li{
       cursor: pointer;
+      &.logic-active{
+        background: #84574c;
+        color: #fff;
+        margin-left: -10px;
+        padding-left: 10px;
+        margin-right: -10px;
+      }
     }
   }
 }
