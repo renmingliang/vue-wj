@@ -60,6 +60,11 @@
           prop="desc">
           <el-input v-model="ruleForm.desc" type="textarea" :autosize="{ minRows: 2 }"></el-input>
         </el-form-item>
+        <el-form-item
+          label="格式"
+          prop="format">
+          <el-input v-model="ruleForm.format" type="textarea" :autosize="{ minRows: 2 }"></el-input>
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
@@ -98,6 +103,11 @@
             <template slot-scope="scope">{{ scope.row.desc }}</template>
         </el-table-column>
         <el-table-column
+          label="备注"
+          align="center">
+            <template slot-scope="scope">{{ scope.row.format }}</template>
+        </el-table-column>
+        <el-table-column
           label="操作"
           align="center"
           width="240">
@@ -124,12 +134,12 @@ const defalutOptions = [
   {label: '全部', value: '0'}
 ]
 const defaultData = [
-  {pid: '1', p_name: '项目1', p_name_system: ['妖精的尾巴-ios'], desc: '备注1'},
-  {pid: '2', p_name: '项目2', p_name_system: ['妖精的尾巴-ios'], desc: '备注2'},
-  {pid: '3', p_name: '项目3', p_name_system: ['妖精的尾巴-ios'], desc: '备注3'},
-  {pid: '4', p_name: '项目4', p_name_system: ['妖精的尾巴-ios'], desc: '备注4'},
-  {pid: '5', p_name: '项目5', p_name_system: ['妖精的尾巴-ios'], desc: '备注5'},
-  {pid: '6', p_name: '项目6', p_name_system: ['妖精的尾巴-ios'], desc: '备注6'}
+  {pid: '1', p_name: '项目1', p_name_system: ['妖精的尾巴-ios'], desc: '备注1', format: '格式'},
+  {pid: '2', p_name: '项目2', p_name_system: ['妖精的尾巴-ios'], desc: '备注2', format: '格式'},
+  {pid: '3', p_name: '项目3', p_name_system: ['妖精的尾巴-ios'], desc: '备注3', format: '格式'},
+  {pid: '4', p_name: '项目4', p_name_system: ['妖精的尾巴-ios'], desc: '备注4', format: '格式'},
+  {pid: '5', p_name: '项目5', p_name_system: ['妖精的尾巴-ios'], desc: '备注5', format: '格式'},
+  {pid: '6', p_name: '项目6', p_name_system: ['妖精的尾巴-ios'], desc: '备注6', format: '格式'}
 ]
 
 export default {
@@ -154,6 +164,7 @@ export default {
         pid: '',
         p_name_system: [],
         desc: '',
+        format: '',
         id: ''
       },
       listQuery: {
@@ -252,6 +263,7 @@ export default {
           pid: '',
           p_name_system: [],
           desc: '',
+          format: '',
           id: ''
         }
       } else {
@@ -263,6 +275,7 @@ export default {
           p_name_system: row.p_name_system,
           pid: row.pid,
           desc: row.desc,
+          format: row.format,
           id: row.id
         }
       }

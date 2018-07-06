@@ -377,7 +377,7 @@ export default {
     // 校验开始时间
     validateRightBegin(rule, value, callback) {
       if (this.ruleForm.settime && !value) {
-        callback(new Error('请选择版权起始时间'))
+        callback(new Error('请选择问卷起始时间'))
       } else {
         callback()
       }
@@ -385,7 +385,7 @@ export default {
     // 校验结束时间
     validateRightEnd(rule, value, callback) {
       if (this.ruleForm.settime && !value) {
-        callback(new Error('请选择版权结束时间'))
+        callback(new Error('请选择问卷结束时间'))
       } else {
         callback()
       }
