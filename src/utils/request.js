@@ -22,7 +22,7 @@ const service = axios.create({
 service.interceptors.request.use(config => {
   // 用户token信息
   if (store.getters.token) {
-    config.headers['access-token'] = getToken()
+    config.headers['token'] = getToken()
   }
   // 防止get请求获取数据304缓存，必须保证状态为200
   if (config.method === 'get') {

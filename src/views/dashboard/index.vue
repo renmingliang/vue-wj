@@ -12,6 +12,8 @@ export default {
     return {}
   },
   created() {
+    // 获取游戏列表
+    this.$store.dispatch('PROJECT_APP_LIST')
   },
   computed: {
   }

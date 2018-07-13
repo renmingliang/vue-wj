@@ -19,20 +19,22 @@ router.beforeEach((to, from, next) => {
       // 判断当前用户是否已拉取完user_info信息
       if (store.getters.roles.length === 0) {
         // 拉取user_menu
-        store.dispatch('GetMenu').then(res => {
-          // note: roles must be a array! such as: ['editor','develop']
-          const roles = res.data
-          store.dispatch('GenerateRoutes', { roles }).then(() => {
-            // 动态添加可访问路由表
-            router.addRoutes(store.getters.addRouters)
-            // hack方法 确保addRoutes已完成，replace：true确保浏览器不会产生history记录
-            next({ ...to, replace: true })
+        store.dispatch('GetMenu')
+          .then(res => {
+            // note: roles must be a array! such as: ['editor','develop']
+            const roles = res.data
+            store.dispatch('GenerateRoutes', { roles }).then(() => {
+              // 动态添加可访问路由表
+              router.addRoutes(store.getters.addRouters)
+              // hack方法 确保addRoutes已完成，replace：true确保浏览器不会产生history记录
+              next({ ...to, replace: true })
+            })
           })
-        }).catch(() => {
-          store.dispatch('FedLogOut').then(() => {
-            next({ path: '/' })
+          .catch(() => {
+            store.dispatch('FedLogOut').then(() => {
+              next({ path: '/' })
+            })
           })
-        })
       } else {
         next()
       }

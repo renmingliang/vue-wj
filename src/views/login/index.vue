@@ -4,7 +4,7 @@
       <div class="logo">
         <img src="../../assets/images/logo.png">
       </div>
-      <h3 class="title">凯撒文化 - 问卷调研平台</h3>
+      <h3 class="title">凯撒文化-问卷调研平台</h3>
       <el-form-item prop="username">
         <span class="svg-container svg-container_login">
           <svg-icon icon-class="user" />
@@ -25,7 +25,7 @@
         </el-button>
       </el-form-item>
       <div class="wx-user">
-        <el-button type="text" @click="handleSSOHref">微信扫码登录</el-button>
+        <el-button type="text" @click="handleSSOHref">SSO扫码登录</el-button>
       </div>
     </el-form>
   </div>
@@ -34,6 +34,7 @@
 <script>
 import { isvalidUsername } from '@/utils/validate'
 import { Message } from 'element-ui'
+import { getQueryString } from '@/utils'
 import store from '@/store'
 
 export default {
@@ -67,38 +68,35 @@ export default {
     }
   },
   beforeRouteEnter (to, from, next) {
-    const isFromSSO = location.href.indexOf('auth_code') !== -1
-    const $ssoToken = document.querySelector('#ssoToken')
-    const token = $ssoToken.value
-    if (isFromSSO && $ssoToken && token && token.indexOf('$access_token') === -1) {
-      store.dispatch('ssoLogin', { token }).then(() => {
-        // 进入首页
-        next(vm => {
-          // 浏览器兼容处理
-          if (location.origin) {
-            location.href = location.origin + '/#/'
-          } else {
-            // IE
-            /* var index = location.href.indexOf('site')
-            location.href = location.href.substr(0, index) + '#/' */
-            location.href = '/#/'
+    const str = location.search.substr(1)
+    if (str) {
+      const token = getQueryString(str, 'token')
+      if (token) {
+        store.dispatch('ssoLogin', { token }).then(() => {
+          // 进入首页
+          next(vm => {
+            // 浏览器兼容处理
+            if (location.origin) {
+              location.href = location.origin + '/#/'
+            } else {
+              // IE
+              location.href = '/#/'
+            }
+          })
+        })
+      } else {
+        Message({
+          message: 'SSO登录获取Token失败，请重新返回登录',
+          type: 'warning',
+          onClose: function() {
+            next()
           }
         })
-      })
-    } else {
-      if (isFromSSO && $ssoToken && !token) {
-        Message({
-          message: 'SSO登录获取Token失败，请使用账户密码登录',
-          type: 'warning'
-        })
       }
-      next()
     }
+    next()
   },
   computed: {
-    ssoUrl() {
-      return document.querySelector('#ssoUrl')
-    }
   },
   methods: {
     showPwd() {
@@ -124,14 +122,10 @@ export default {
       })
     },
     handleSSOHref() {
-      if (this.ssoUrl && this.ssoUrl.value && this.ssoUrl.value.indexOf('$sso') === -1) {
-        location.href = this.ssoUrl.value
-      } else {
-        this.$message({
-          message: 'SSO登录链接不存在，请使用账户密码登录',
-          type: 'warning'
-        })
-      }
+      this.$message({
+        message: 'SSO登录链接不存在，请使用账户密码登录',
+        type: 'warning'
+      })
     }
   }
 }

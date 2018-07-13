@@ -1,98 +1,85 @@
 import { param2Obj } from '@/utils'
 import { getToken } from '@/utils/auth' // getToken from cookie
 
+export const permissRouter = [
+  {
+    code: 'manage',
+    name: '问卷管理',
+    children: [
+      {
+        code: 'question-create',
+        name: '问卷创建'
+      },
+      {
+        code: 'question-list',
+        name: '问卷列表',
+        permissions: [
+          {
+            route: 'question/edit',
+            name: '编辑'
+          },
+          {
+            route: 'question/delete',
+            name: '删除'
+          }
+        ]
+      },
+      {
+        code: 'question-setting',
+        name: '问卷设置'
+      },
+      {
+        code: 'question-preview',
+        name: '问卷预览'
+      },
+      {
+        code: 'question-edit',
+        name: '问卷编辑'
+      },
+      {
+        code: 'question-download',
+        name: '问卷下载'
+      },
+      {
+        code: 'question-analyse',
+        name: '问卷分析'
+      },
+      {
+        code: 'question-handle',
+        name: '问卷操作'
+      }
+    ]
+  },
+  {
+    code: 'award',
+    type: 'menu',
+    name: '奖励发放',
+    children: [
+      {
+        code: 'award-record',
+        name: '发放记录'
+      }
+    ]
+  },
+  {
+    code: 'setting',
+    name: '系统设置',
+    children: [
+      {
+        code: 'project',
+        name: '项目设置'
+      },
+      {
+        code: 'permission',
+        name: '权限管理'
+      }
+    ]
+  }
+]
+
 const userMap = {
   admin: {
-    roles: [
-      {
-        code: 'manage',
-        type: 'menu',
-        title: '问卷管理',
-        children: [
-          {
-            code: 'question-create',
-            type: 'menu',
-            title: '问卷创建',
-            permissions: [
-              {
-                code: 'edit-question',
-                type: 'button',
-                title: '编辑'
-              },
-              {
-                code: 'delete-question',
-                type: 'button',
-                title: '删除'
-              }
-            ]
-          },
-          {
-            code: 'question-list',
-            type: 'menu',
-            title: '问卷列表'
-          },
-          {
-            code: 'question-setting',
-            type: 'menu',
-            title: '问卷设置'
-          },
-          {
-            code: 'question-preview',
-            type: 'menu',
-            title: '问卷预览'
-          },
-          {
-            code: 'question-edit',
-            type: 'menu',
-            title: '问卷编辑'
-          },
-          {
-            code: 'question-download',
-            type: 'menu',
-            title: '问卷下载'
-          },
-          {
-            code: 'question-analyse',
-            type: 'menu',
-            title: '问卷分析'
-          },
-          {
-            code: 'question-handle',
-            type: 'menu',
-            title: '问卷操作'
-          }
-        ]
-      },
-      {
-        code: 'award',
-        type: 'menu',
-        title: '奖励发放',
-        children: [
-          {
-            code: 'award-record',
-            type: 'menu',
-            title: '发放记录'
-          }
-        ]
-      },
-      {
-        code: 'setting',
-        type: 'menu',
-        title: '系统设置',
-        children: [
-          {
-            code: 'project',
-            type: 'menu',
-            title: '项目设置'
-          },
-          {
-            code: 'permission',
-            type: 'menu',
-            title: '权限设置'
-          }
-        ]
-      }
-    ],
+    roles: permissRouter,
     token: 'admin',
     introduction: '我是超级管理员',
     avatar: 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',
@@ -103,41 +90,41 @@ const userMap = {
       {
         code: 'manage',
         type: 'menu',
-        title: '问卷管理',
+        name: '问卷管理',
         children: [
           {
             code: 'question-create',
             type: 'menu',
-            title: '问卷创建',
-            permissions: [
-              {
-                code: 'edit-question',
-                type: 'button',
-                title: '编辑'
-              },
-              {
-                code: 'delete-question',
-                type: 'button',
-                title: '删除'
-              }
-            ]
+            name: '问卷创建'
           },
           {
             code: 'question-list',
             type: 'menu',
-            title: '问卷列表'
+            name: '问卷列表',
+            permissions: [
+              {
+                code: 'edit-question',
+                type: 'button',
+                name: '编辑'
+              },
+              {
+                code: 'delete-question',
+                type: 'button',
+                name: '删除'
+              }
+            ]
           }
         ]
       },
       {
         code: 'award',
         type: 'menu',
-        title: '奖励发放',
+        name: '奖励发放',
         children: [
           {
             code: 'award-record',
             type: 'menu',
-            title: '发放记录'
+            name: '发放记录'
           }
         ]
       }

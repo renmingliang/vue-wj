@@ -57,7 +57,7 @@ export const asyncRouterMap = [
       {
         path: 'question-create',
         name: 'question-create',
-        component: _import('question/question-create'),
+        component: _import('question/question-setting'),
         meta: { title: '问卷创建', code: 'question-create' }
       },
       {
@@ -67,27 +67,6 @@ export const asyncRouterMap = [
         meta: { title: '问卷列表', code: 'question-list' }
       },
       {
-        path: 'question-setting/:id',
-        name: 'question-setting',
-        hidden: true,
-        component: _import('question/question-setting'),
-        meta: { title: '问卷设置', code: 'question-setting' }
-      },
-      {
-        path: 'question-preview/:id',
-        name: 'question-preview',
-        hidden: true,
-        component: _import('question/question-preview'),
-        meta: { title: '问卷预览', code: 'question-preview' }
-      },
-      {
-        path: 'question-edit/:id',
-        name: 'question-edit',
-        hidden: true,
-        component: _import('question/question-edit'),
-        meta: { title: '问卷编辑', code: 'question-edit' }
-      },
-      {
         path: 'question-handle/:id',
         name: 'question-handle',
         hidden: true,
@@ -95,18 +74,39 @@ export const asyncRouterMap = [
         meta: { title: '问卷操作', code: 'question-handle' }
       },
       {
+        path: 'question-setting/:id',
+        name: 'question-setting',
+        hidden: true,
+        component: _import('question/question-setting'),
+        meta: { title: '问卷设置' }
+      },
+      {
+        path: 'question-preview/:id',
+        name: 'question-preview',
+        hidden: true,
+        component: _import('question/question-preview'),
+        meta: { title: '问卷预览' }
+      },
+      {
+        path: 'question-edit/:id',
+        name: 'question-edit',
+        hidden: true,
+        component: _import('question/question-edit'),
+        meta: { title: '问卷编辑' }
+      },
+      {
         path: 'question-download/:id',
         name: 'question-download',
         hidden: true,
         component: _import('question/question-download'),
-        meta: { title: '问卷下载', code: 'question-download' }
+        meta: { title: '问卷下载' }
       },
       {
         path: 'question-analyse/:id',
         name: 'question-analyse',
         hidden: true,
         component: _import('question/question-analyse'),
-        meta: { title: '问卷分析', code: 'question-analyse' }
+        meta: { title: '问卷分析' }
       }
     ]
   },

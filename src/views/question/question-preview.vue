@@ -41,7 +41,7 @@
             <draggable
               element="ul"
               v-model="questions.lists"
-              :options="{ group: 'editor', disabled: isEdit }"
+              :options="{ group: 'editor', disabled: viewEdit }"
               @end="dragItem">
               <li
                 v-for="(list, index) in questions.lists"
@@ -405,10 +405,21 @@ import draggable from 'vuedraggable'
 
 export default {
   name: 'question-preview',
+  props: {
+    isEdit: {
+      type: Boolean,
+      default: false
+    },
+    isLook: {
+      type: Boolean,
+      default: false
+    },
+    id: [String, Number]
+  },
   data() {
     return {
-      isEdit: false,
-      isCreate: false,
+      viewEdit: false,
+      viewCreate: false,
       loading: false,
       dialogVisible: false,
       dialogOtherVisible: false,
@@ -637,10 +648,10 @@ export default {
     createItem(item) {
       const num = this.questions.lists.length + 1
       this.prevEditorNum = num
-      if (this.isCreate || this.isEdit) {
+      if (this.viewCreate || this.viewEdit) {
         return false
       }
-      this.isCreate = true
+      this.viewCreate = true
       const temp = deepClone(item)
       this.questions.lists.push(temp)
       this.enterItem(num)
@@ -648,11 +659,11 @@ export default {
     // 6.编辑该题
     enterItem(num) {
       this.prevEditorNum = num
-      if (this.isEdit) {
+      if (this.viewEdit) {
         return false
       }
       console.log('进入编辑', num)
-      this.isEdit = true
+      this.viewEdit = true
       this.$set(this.editorNum, num, true)
       const tempData = this.questions.lists[num - 1]
       this.editorData[num] = this.editorData[num] || {}
@@ -994,7 +1005,7 @@ export default {
     // 29.该题取消编辑
     cancelEditor(num) {
       console.log('取消', num)
-      if (this.isCreate) {
+      if (this.viewCreate) {
         this.questions.lists.pop()
       } else {
         this.questions.lists[num - 1] = this.optionClone
@@ -1009,8 +1020,8 @@ export default {
     },
     // 30.摧毁该题富文本框
     destoryEditor(num) {
-      this.isEdit = false
-      this.isCreate = false
+      this.viewEdit = false
+      this.viewCreate = false
       this.$set(this.editorNum, num, false)
       Object.values(this.CKEDITOR.instances).forEach(instace => {
         const noDestory = instace.name

@@ -21,150 +21,132 @@ export default {
   getMenu: () => {
     return request.get('/user/permission')
   },
+  // 权限配置
+  permissionConfig: () => {
+    return request.get('/permission/config')
+  },
+  // sso所有用户
+  userSso: () => {
+    return request.get('/sso/all-users')
+  },
+  // 用户权限列表
+  userList: (data) => {
+    return request.get('/user/list', { params: data })
+  },
   // 添加用户权限
-  UserAdd: (data) => {
+  userAdd: (data) => {
     return request.post('/user/add', data)
   },
   // 修改用户权限
-  UserUpdate: (data) => {
+  userUpdate: (data) => {
     return request.post('/user/update-permission', data)
   },
   // 删除用户权限
-  UserDelete: (data) => {
-    return request.post('/user/del', data)
+  userDel: (data) => {
+    return request.post('/user/change-status', data)
   },
-  // sso所有用户
-  UserSso: () => {
-    return request.get('/sso/all-users')
+
+  // 项目游戏列表
+  projectAppList: (data) => {
+    return request.post('project/app-list', data)
   },
-  // IP录入
-  IPAdd: (data) => {
-    return request.post('/ip/form-add', data, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      },
-      transformRequest: [function (data) {
-        return data
-      }]
-    })
+  // 项目列表
+  projectList: (data) => {
+    return request.post('/project/list', data)
   },
-  // IP编辑
-  IPUpdate: (data) => {
-    return request.post('/ip/form-update', data, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      },
-      transformRequest: [function (data) {
-        return data
-      }]
-    })
+  // 项目添加
+  projectCreate: (data) => {
+    return request.post('/project/create', data)
   },
-  // IP删除
-  IPDelete: (data) => {
-    return request.post('/ip/del', data)
+  // 项目编辑
+  projectEdit: (data) => {
+    return request.post('/project/edit', data)
   },
-  // 对应IP改编权类别的项目删除
-  IPProjectDelete: (data) => {
-    return request.post('/ip/right-del-project', data)
-  },
-  // 对应IP改编权类别单项目删除
-  IPRightDelete: (data) => {
-    return request.post('/ip/right-del', data)
-  },
-  // 对应IP下的所有改编权类别
-  IPRightAll: (data) => {
-    return request.get('/adaptation-right/ip', { params: data })
-  },
-  // IP详情
-  IPDetail: (data) => {
-    return request.get('/ip/detail', { params: data })
-  },
-  // IP列表
-  IPList: (data) => {
-    return request.get('/ip/lists', { params: data })
-  },
-  // IP名称搜索
-  IPSearchByName: (data) => {
-    return request.get('/ip/search-by-name', { params: data })
-  },
-  // Project删除
-  ProjectDelete: (data) => {
+  // 项目删除
+  projectDel: (data) => {
     return request.post('/project/del', data)
   },
-  // Project录入
-  ProjectAdd: (data) => {
-    return request.post('/project/form-add', data)
+
+  // 问卷状态
+  questionStatus: () => {
+    return request.get('/question/question-status-list')
   },
-  // Project编辑
-  ProjectUpdate: (data) => {
-    return request.post('/project/form-update', data)
+  // 问卷状态
+  questionType: () => {
+    return request.get('/question/question-type-list')
   },
-  // Project详情
-  ProjectDetail: (data) => {
-    return request.get('/ip/right-projects', { params: data })
+  // 问卷列表
+  questionList: (data) => {
+    return request.post('/question/question-list', data)
   },
-  // 新增改编权类别
-  AdaptationAdd: (data) => {
-    return request.post('/adaptation-right/sub-add', data)
+  // 问卷设置创建
+  questionCreate: (data) => {
+    return request.post('question/question-create', data)
   },
-  // 编辑改编权类别
-  AdaptationUpdate: (data) => {
-    return request.post('/adaptation-right/sub-update', data)
+  // 问卷设置编辑
+  questionEdit: (data) => {
+    return request.post('question/question-edit', data)
   },
-  // 删除子改编权类别
-  AdaptationDelete: (data) => {
-    return request.post('/adaptation-right/sub-del', data)
+  // 问卷设置详情
+  questionDetail: (data) => {
+    return request.post('/question/question-one', data)
   },
-  // 子改编权类别列表
-  AdaptationList: (data) => {
-    return request.get('/adaptation-right/sub-all', { params: data })
+  // 问卷提审
+  questionSubmitVerify: (data) => {
+    return request.post('/question/question-submit-verify', data)
   },
-  // TOP改编权类别列表
-  AdaptationTop: () => {
-    return request.get('/adaptation-right/top-all')
+  // 问卷审核
+  questionVerify: (data) => {
+    return request.post('/question/question-verify', data)
   },
-  // 公司主体列表
-  CompanyList: () => {
-    return request.get('/company/all')
+  // 问卷发布
+  questionPublish: (data) => {
+    return request.post('/question/question-publish', data)
   },
-  // 权限配置
-  PermissionConfig: () => {
-    return request.get('/ipr-permission/config')
+  // 问卷回收
+  questionOver: (data) => {
+    return request.post('/question/question-over', data)
   },
-  // 权限列表
-  PermissionList: () => {
-    return request.get('/ipr-permission/list')
+  // 问卷复制
+  questionCopy: (data) => {
+    return request.post('/question/question-copy', data)
   },
-  // 权限详情
-  PermissionDetail: (data) => {
-    return request.get('/ipr-permission/detail', { params: data })
+
+  // 发放奖品列表
+  awardList: (data) => {
+    return request.post('/paper/list', data)
   },
-  // 权限详情+用户
-  PermissionDetailUser: (data) => {
-    return request.get('/ipr-permission/detail-and-users', { params: data })
+  // CP奖品列表
+  itemCpList: (data) => {
+    return request.post('/item/cp-item', data)
   },
-  // 权限添加
-  PermissionAdd: (data) => {
-    return request.post('/ipr-permission/add', data)
+  // 问卷奖品列表
+  itemList: (data) => {
+    return request.post('/item/list', data)
   },
-  // 权限编辑
-  PermissionUpdate: (data) => {
-    return request.post('/ipr-permission/update', data)
+  // 奖品添加
+  itemCreate: (data) => {
+    return request.post('/item/create', data)
   },
-  // 权限删除
-  PermissionDelete: (data) => {
-    return request.post('/ipr-permission/del', data)
+  // 奖品编辑
+  itemEdit: (data) => {
+    return request.post('/item/edit', data)
   },
+  // 奖品详情
+  itemOne: (data) => {
+    return request.post('/item/one', data)
+  },
+  // 奖品删除
+  itemDel: (data) => {
+    return request.post('/item/del', data)
+  },
+
   // 导出
-  Export: (data) => {
-    return request.get('/ip/export-lists', { params: data })
+  export: (data) => {
+    return request.get('/question/export-lists', { params: data })
   },
   // 文件上传
-  Upload: (data) => {
+  upload: (data) => {
     return request.post('/upload/upload-attachment', data)
-  },
-  // 操作日志列表
-  LogList: (data) => {
-    return request.get('/operation-log/list', { params: data })
   }
 }

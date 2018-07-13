@@ -4,13 +4,26 @@
 
 const path = require('path')
 
+const target = 'http://10.10.40.33:8606' // 开发 - zp
+// const target = 'http://10.10.40.33:8315' // 开发 - nhl
+// const target = 'http://115.159.189.146:8040/'  //沙箱
+
 module.exports = {
   dev: {
 
     // Paths
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
-    proxyTable: {},
+    // 设置代理
+    proxyTable: {
+      '/dev': {
+        target,
+        changeOrigin: true,
+        pathRewrite: {
+          '^/dev': ''
+        }
+      }
+    },
 
     // Various Dev Server settings
     host: 'localhost', // can be overwritten by process.env.HOST
@@ -45,11 +58,11 @@ module.exports = {
 
   build: {
     // Template for index.html
-    index: path.resolve(__dirname, '../dist/index.html'),
+    index: path.resolve(__dirname, '../../../views/site/index.php'),
 
     // Paths
-    assetsRoot: path.resolve(__dirname, '../dist'),
-    assetsSubDirectory: 'static',
+    assetsRoot: path.resolve(__dirname, '../../'),
+    assetsSubDirectory: 'static/dist',
     assetsPublicPath: '/',
 
     /**

@@ -1,7 +1,11 @@
 <template>
   <div>
-    <question-setting :is-edit="status"></question-setting>
-    <question-preview></question-preview>
+    <div class="question-setting">
+      <question-setting :is-edit="status"></question-setting>
+    </div>
+    <div class="question-preview">
+      <question-preview :is-edit="status"></question-preview>
+    </div>
   </div>
 </template>
 
@@ -19,6 +23,8 @@ export default {
   components: {
     questionSetting,
     questionPreview
+  },
+  methods: {
   }
 }
 </script>

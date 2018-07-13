@@ -5,14 +5,14 @@
         <el-row :gutter="30">
           <el-col :span="8">
             <el-form-item label="角色 ID：">
-              <el-input v-model="listQuery.id" placeholder="角色ID" clearable></el-input>
+              <el-input v-model="listQuery.role_id" placeholder="角色ID" clearable></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="8">
             <el-form-item label="问卷 ID：">
-              <el-select v-model="listQuery.sub_right" placeholder="请选择">
+              <el-select v-model="listQuery.question_id" placeholder="请选择">
                 <el-option
-                  v-for="item in typeOptions"
+                  v-for="item in questionIdOptions"
                   :key="item.value"
                   :label="item.label"
                   :value="item.value">
@@ -27,7 +27,7 @@
                 type="date"
                 placeholder="请选择"
                 value-format="yyyy-MM-dd"
-                v-model="listQuery.right_begin">
+                v-model="listQuery.start_time">
               </el-date-picker>
             </el-form-item>
           </el-col>
@@ -38,7 +38,7 @@
             <el-form-item label="角色昵称：">
               <el-autocomplete
                 placeholder="支持模糊搜索"
-                v-model="listQuery.name"
+                v-model="listQuery.role_name"
                 :fetch-suggestions="querySearch"
                 :trigger-on-focus="false"
               ></el-autocomplete>
@@ -46,9 +46,9 @@
           </el-col>
           <el-col :span="8">
             <el-form-item label="所属项目：">
-              <el-select v-model="listQuery.company" placeholder="请选择">
+              <el-select v-model="listQuery.project_id" placeholder="请选择">
                 <el-option
-                  v-for="item in companyOptions"
+                  v-for="item in projectOptions"
                   :key="item.value"
                   :label="item.label"
                   :value="item.value">
@@ -63,7 +63,7 @@
                 type="date"
                 placeholder="请选择"
                 value-format="yyyy-MM-dd"
-                v-model="listQuery.right_end">
+                v-model="listQuery.end_time">
               </el-date-picker>
             </el-form-item>
           </el-col>
@@ -73,8 +73,7 @@
           <el-col :span="10">
             <el-form-item>
               <el-button @click="handleFilter" type="primary" icon="el-icon-search">搜索</el-button>
-              <el-button @click="handleExport('ip/export-lists')" icon="el-icon-download">下载</el-button>
-              <a ref="exportExcel" style="display:none;" :href="exportUrl" target="_blank">导出链接</a>
+              <el-button @click="handleExport" icon="el-icon-download">下载</el-button>
             </el-form-item>
           </el-col>
         </el-row>
@@ -83,12 +82,12 @@
 
     <div class="common-wrap search-result">
       <el-table
-        v-loading="listLoading"
+        v-loading="awardLoading"
         element-loading-text="拼命加载中"
         highlight-current-row
         border
         stripe
-        :data="listData">
+        :data="awardData">
         <el-table-column
           type="index"
           label="序号"
@@ -96,47 +95,42 @@
           width="100">
         </el-table-column>
         <el-table-column
-          prop="survey_id"
+          prop="question_id"
           label="问卷ID"
           align="center">
         </el-table-column>
         <el-table-column
+          prop="role_id"
           label="角色ID"
           align="center">
-          <template slot-scope="scope">{{ scope.row.role_id }}</template>
         </el-table-column>
         <el-table-column
           prop="role_name"
-          label="角色名称"
+          label="角色昵称"
           align="center">
         </el-table-column>
         <el-table-column
-          prop="role_server"
+          prop="server_name"
           label="服务器名称"
           align="center">
         </el-table-column>
         <el-table-column
-          prop="role_grade"
+          prop="role_level"
           label="角色等级"
           align="center">
         </el-table-column>
         <el-table-column
           label="领取时间"
           align="center">
-            <template slot-scope="scope">{{ scope.row.record_time }}</template>
+            <template slot-scope="scope">{{ scope.row.send_time }}</template>
         </el-table-column>
         <el-table-column
           label="发放状态"
           align="center">
             <template slot-scope="scope">
               <el-tag
-                v-if="scope.row.record_status > 0"
-                type="success"
-                disable-transitions>成功</el-tag>
-              <el-tag
-                v-else
-                type="danger"
-                disable-transitions>失败</el-tag>
+                :type="scope.row.send_status === '1'?'success':'danger'"
+                disable-transitions>{{scope.row.send_status_name}}</el-tag>
             </template>
         </el-table-column>
       </el-table>
@@ -149,7 +143,7 @@
           :page-sizes="[10, 20, 30, 50]"
           :page-size="listQuery.page_size"
           layout="total, sizes, prev, pager, next, jumper"
-          :total="listTotal">
+          :total="awardTotal">
         </el-pagination>
       </div>
     </div>
@@ -158,109 +152,48 @@
 
 <script>
 import qs from 'qs'
-
-const defalutOptions = [
-  {label: '全部', value: '0'}
-]
-const result = {
-  data: [
-    {
-      survey_id: '1',
-      role_id: '111222333',
-      role_name: '角色昵称',
-      role_server: '服务器名称',
-      role_grade: '角色等级',
-      record_time: '2018-06-06 19:00:01',
-      record_status: 0
-    },
-    {
-      survey_id: '2',
-      role_id: '111222333',
-      role_name: '角色昵称',
-      role_server: '服务器名称',
-      role_grade: '角色等级',
-      record_time: '2018-06-06 19:11:01',
-      record_status: 1
-    },
-    {
-      survey_id: '3',
-      role_id: '111222333',
-      role_name: '角色昵称',
-      role_server: '服务器名称',
-      role_grade: '角色等级',
-      record_time: '2018-06-06 19:22:01',
-      record_status: 0
-    },
-    {
-      survey_id: '4',
-      role_id: '111222333',
-      role_name: '角色昵称',
-      role_server: '服务器名称',
-      role_grade: '角色等级',
-      record_time: '2018-06-06 19:33:01',
-      record_status: 0
-    },
-    {
-      survey_id: '5',
-      role_id: '111222333',
-      role_name: '角色昵称',
-      role_server: '服务器名称',
-      role_grade: '角色等级',
-      record_time: '2018-06-06 19:44:01',
-      record_status: 1
-    }
-  ],
-  total_count: '100'
-}
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'record',
   data() {
     return {
-      exportUrl: 'javascript:;',
-      adaptationName: [],
-      companyName: [],
-      listLoading: false,
-      listData: null,
-      listTotal: null,
       listQuery: {
         page: 1,
-        page_size: 10,
-        id: null,
-        name: '',
-        company: '',
-        sub_right: '',
-        remark: '',
-        right_begin: '',
-        right_end: ''
+        size: 10,
+        role_id: '',
+        role_name: '',
+        question_id: '',
+        project_id: '',
+        start_time: '',
+        end_time: ''
       },
-      multipleSelection: [],
       startDateOpt: {
         disabledDate: (time) => {
-          return time.getTime() > Date.parse(this.listQuery.right_end)
+          return time.getTime() > Date.parse(this.listQuery.end_time)
         }
       },
       endDateOpt: {
         disabledDate: (time) => {
-          return time.getTime() < Date.parse(this.listQuery.right_begin)
+          return time.getTime() < Date.parse(this.listQuery.start_time)
         }
       }
     }
   },
   computed: {
-    typeOptions() {
-      if (this.adaptationName) {
-        return defalutOptions.concat(this.adaptationName)
-      } else {
-        return defalutOptions
-      }
+    ...mapGetters([
+      'awardLoading',
+      'defaultOptions',
+      'projectName',
+      'questionId',
+      'awardData',
+      'awardTotal'
+    ]),
+    questionIdOptions() {
+      return this.defaultOptions.concat(this.questionId)
     },
-    companyOptions() {
-      if (this.companyName) {
-        return defalutOptions.concat(this.companyName)
-      } else {
-        return defalutOptions
-      }
+    projectOptions() {
+      return this.defaultOptions.concat(this.projectName)
     }
   },
   created() {
@@ -270,22 +203,7 @@ export default {
   methods: {
     // 0.获取数据
     getList() {
-      this.listLoading = true
-      setTimeout(() => {
-        this.listData = result.data
-        this.listTotal = +result.total_count
-        this.listLoading = false
-      }, 1000)
-      /* this.$store.dispatch('AWARD_FETCH_LIST', this.listQuery)
-        .then(res => {
-          const result = res.data
-          this.listData = result.data
-          this.listTotal = +result.total_count
-          this.listLoading = false
-        })
-        .catch(() => {
-          this.listLoading = false
-        }) */
+      this.$store.dispatch('AWARD_FETCH_LIST', this.listQuery)
     },
     // 1.搜索
     handleFilter() {
@@ -294,7 +212,7 @@ export default {
     },
     // 2.单页最大显示数据条数
     handleSizeChange(val) {
-      this.listQuery.page_size = val
+      this.listQuery.size = val
       this.getList()
     },
     // 3.处理分页
@@ -304,36 +222,17 @@ export default {
     },
     // 4.导出表格
     handleExport(params) {
-      // 至少选择导出一项
-      const tempIds = this.multipleSelection.map(item => {
-        return item.id
-      })
-      const ids = tempIds.join(',')
       const query = qs.stringify(this.listQuery)
-      // 浏览器兼容处理
-      if (location.origin) {
-        this.exportUrl = location.origin + `/${params}?${query}&ids=${ids}`
-      } else {
-        // IE
-        this.exportUrl = `/${params}?${query}&ids=${ids}`
-      }
-
-      setTimeout(() => {
-        this.$refs.exportExcel.click()
-      }, 200)
+      console.log(query)
     },
-    // 5.处理选择
-    handleSelectionChange(val) {
-      this.multipleSelection = val
-    },
-    // 6.模糊搜索IP名称
-    querySearch(name, cb) {
-      this.$store.dispatch('IP_SEARCH_NAME', { name })
+    // 5.模糊搜索角色昵称
+    querySearch(role_name, cb) {
+      this.$store.dispatch('AWARD_SEARCH_ROLE', { role_name })
         .then(res => {
           const result = res.data.map(item => {
             return {
               id: item.id,
-              value: item.name
+              value: item.role_name
             }
           })
           // 调用callback返回建议列表的数据

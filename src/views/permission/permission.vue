@@ -1,33 +1,54 @@
 <template>
-  <div class="search-container">
+  <div class="search-container" v-loading="permissionLoading">
     <div class="common-wrap search-filter">
-      <el-form ref="form" :model="filterQuery" label-width="120px">
-        <el-row :gutter="30">
-          <el-col :span="7">
-            <el-form-item label="项目名称">
-              <el-select v-model="filterQuery.name" placeholder="请选择">
-                <el-option v-for="item in permissionOptions" :label="item.label" :value="item.value" :key="item.value"></el-option>
-              </el-select>
-            </el-form-item>
+      <el-form ref="form" :model="listQuery" label-width="120px">
+        <el-row>
+          <el-col :span="16">
+            <el-row>
+              <el-col :span="12">
+                <el-form-item label="员工姓名">
+                  <el-autocomplete
+                    placeholder="支持模糊搜索"
+                    popper-class="custom-autocomplete"
+                    v-model.trim="listQuery.true_name"
+                    :trigger-on-focus="false"
+                    :fetch-suggestions="querySearchUserTrueName">
+                  </el-autocomplete>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="员工账号">
+                  <el-autocomplete
+                    placeholder="支持模糊搜索"
+                    popper-class="custom-autocomplete"
+                    v-model.trim="listQuery.username"
+                    :trigger-on-focus="false"
+                    :fetch-suggestions="querySearchUserName">
+                  </el-autocomplete>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="12">
+                <el-form-item label="项目名称">
+                  <el-select v-model="listQuery.project_id" placeholder="请选择">
+                    <el-option v-for="item in projectOptions" :label="item.label" :value="item.value" :key="item.value"></el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="账号状态">
+                  <el-select v-model="listQuery.status" placeholder="请选择">
+                    <el-option v-for="item in userStatusOptions" :label="item.label" :value="item.value" :key="item.value"></el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
           </el-col>
-          <el-col :span="7">
-            <el-form-item label="员工姓名">
-              <el-autocomplete
-                placeholder="支持模糊搜索"
-                popper-class="custom-autocomplete"
-                v-model.trim="filterQuery.username"
-                :trigger-on-focus="false"
-                :fetch-suggestions="querySearchUser">
-              </el-autocomplete>
-            </el-form-item>
-          </el-col>
-          <el-col :span="10">
-            <el-form-item label-width="10px">
+          <el-col :span="8">
+            <el-form-item label-width="50px">
               <el-button type="primary" @click="handleFilter">查询</el-button>
-              <router-link :to="{name:'create-permission'}">
-                <el-button type="info">新增权限</el-button>
-              </router-link>
-              <el-button type="info" @click="dialogFormVisible = true">新增员工</el-button>
+              <el-button type="info" @click="handleEdit">新增账号</el-button>
             </el-form-item>
           </el-col>
         </el-row>
@@ -35,63 +56,96 @@
     </div>
 
     <el-dialog
+      custom-class="custom-dialog-permission"
       center
-      custom-class="custom-dialog-form"
-      title="新增员工"
+      @open="fetchInfo"
+      :title="ruleFormTitle"
+      :fullscreen="true"
       :visible.sync="dialogFormVisible">
       <el-form
         ref="ruleForm"
-        label-width="110px"
         :model="ruleForm">
-        <el-form-item
-          label="员工姓名"
-          prop="username"
-          :rules="{ required: true, message: '请输入员工姓名', trigger: 'blur' }">
-          <el-autocomplete
-            placeholder="支持模糊搜索"
-            popper-class="custom-autocomplete"
-            v-model="ruleForm.username"
-            :trigger-on-focus="false"
-            :fetch-suggestions="querySearch"
-            @select="handleSuggestions">
-            <template slot-scope="{ item }">
-              <div class="name">
-                <span>{{ item.value }}</span>
-                <span class="addr">{{ item.nickname }}</span>
-              </div>
-            </template>
-          </el-autocomplete>
-        </el-form-item>
-        <el-form-item
-          label="员工权限"
-          prop="ipr_permission"
-          :rules="{required: true, message: '请选择员工权限', trigger: 'change'}">
-          <el-select
-            v-model="ruleForm.ipr_permission"
-            placeholder="请选择">
-            <el-option
-              v-for="item in permissionName"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
+        <el-card class="box-card" shadow="never">
+          <div slot="header" class="card-header">
+            <span class="card-title">员工账号</span>
+          </div>
+          <el-form-item
+            prop="username"
+            :rules="{ required: true, message: '请输入员工账号', trigger: 'blur' }">
+            <el-autocomplete
+              :disabled="isLook"
+              placeholder="企业微信账号，支持中英文模糊搜索"
+              popper-class="custom-autocomplete"
+              v-model="ruleForm.username"
+              :trigger-on-focus="false"
+              :fetch-suggestions="querySearch">
+              <template slot-scope="{ item }">
+                <div class="name">
+                  <span>{{ item.value }}</span>
+                  <span class="addr">{{ item.nickname }}</span>
+                </div>
+              </template>
+            </el-autocomplete>
+          </el-form-item>
+        </el-card>
+
+        <el-card class="box-card" shadow="never">
+          <div slot="header" class="card-header">
+            <span class="card-title">权限项目</span>
+          </div>
+          <el-form-item>
+            <el-checkbox-group
+              v-model="ruleForm.permitted_appids">
+              <el-checkbox
+                v-for="project in permissionConfigData.projects"
+                :key="project.id"
+                :label="project.id">{{project.project_name}}</el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
+        </el-card>
+
+        <el-card class="box-card" shadow="never">
+          <div slot="header" class="card-header">
+            <span class="card-title">权限板块</span>
+          </div>
+          <el-form-item>
+            <el-checkbox-group
+              v-model="ruleForm.permitted_permissions">
+              <el-row>
+                <div v-for="item in permissionConfigData.menus_permissions" :key="item.id">
+                  <div
+                    class="custom-group"
+                    v-for="child in item.children"
+                    :key="child.id">
+                    <span style="font-size: 14px;">{{child.name}}</span>
+                    <ul class="group-item">
+                      <li
+                        v-for="permission in child.permissions"
+                        :key="permission.id">
+                        <el-checkbox :label="permission.id">{{permission.name}}</el-checkbox>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </el-row>
+            </el-checkbox-group>
+          </el-form-item>
+        </el-card>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="cancelSubmit">取 消</el-button>
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
         <el-button type="primary" @click="submitForm">确 定</el-button>
       </div>
     </el-dialog>
 
     <div class="common-wrap search-result">
       <el-table
-        v-loading="listLoading"
+        v-loading="permissionUserLoading"
         element-loading-text="拼命加载中"
         highlight-current-row
         border
         stripe
-        :data="computedPermission">
+        :data="permissionUser">
         <el-table-column
           fixed
           type="index"
@@ -100,37 +154,27 @@
           width="100">
         </el-table-column>
         <el-table-column
+          prop="true_name"
           label="员工姓名"
           align="center">
-          <template slot-scope="scope">
-            <span class="hover-show">
-              <router-link
-                :to="{name:'look-permission', params: {id: scope.row.id}}"
-                class="hover-link">
-                {{ scope.row.name }}
-              </router-link>
-            </span>
-          </template>
         </el-table-column>
         <el-table-column
-          label="员工邮箱"
+          prop="username"
+          label="员工账号"
           align="center">
-          <template slot-scope="scope">{{ scope.row.email }}</template>
         </el-table-column>
         <el-table-column
           label="权限项目"
           align="center">
             <template slot-scope="scope">
-              <el-tooltip effect="dark" content="点击修改权限人员" placement="top">
-                <router-link :to="{name: 'edit-user', params: {id: scope.row.id}}">
-                  <span
-                    v-for="(user, index) in scope.row.users"
-                    :key="index">
-                      <em :class="user === filterQuery.username? 'hightlight-color' : ''">{{ user }}</em>
-                      {{ index === scope.row.users.length-1? '':'、' }}
-                  </span>
-                </router-link>
-              </el-tooltip>
+              <span>{{scope.row.permitted_appids_name}}</span>
+            </template>
+        </el-table-column>
+        <el-table-column
+          label="权限板块"
+          align="center">
+            <template slot-scope="scope">
+              <span>{{scope.row.permitted_permissions_name}}</span>
             </template>
         </el-table-column>
         <el-table-column
@@ -138,18 +182,30 @@
           align="center"
           width="240">
           <template slot-scope="scope">
-            <router-link
-              :to="{name:'edit-permission', params: {id: scope.row.id}}">
-              <el-button size="mini" icon="el-icon-edit">编辑</el-button>
-            </router-link>
             <el-button
-            size="mini"
-            type="danger"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+              size="mini"
+              icon="el-icon-edit"
+              @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+            <el-button
+              size="mini"
+              type="danger"
+              icon="el-icon-delete"
+              @click="handleDelete(scope.$index, scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
+
+      <div class="search-pagination">
+        <el-pagination
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+          :current-page="listQuery.page"
+          :page-sizes="[10, 20, 30, 50]"
+          :page-size="listQuery.page_size"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="permissionUserTotal">
+        </el-pagination>
+      </div>
 
     </div>
   </div>
@@ -157,144 +213,183 @@
 
 <script>
 import { mapGetters } from 'vuex'
-const defalutOptions = [
-  {label: '全部', value: '0'}
+
+const defaultUserStatus = [
+  {label: '正常', value: '0'},
+  {label: '禁用', value: '1'}
 ]
 
 export default {
   data() {
     return {
+      isLook: false,
       timeout: null,
-      permissAll: null,
       dialogFormVisible: false,
-      listLoading: false,
-      filterQuery: {
-        name: '',
-        username: ''
+      ruleFormTitle: '新增账号权限',
+      postType: 'PERMISSION_ADD',
+      listQuery: {
+        page: 1,
+        page_size: 10,
+        project_id: '',
+        username: '',
+        true_name: '',
+        status: ''
       },
       ruleForm: {
         username: '',
-        ipr_permission: '',
-        ks: 0
+        permitted_appids: [],
+        permitted_permissions: [],
+        permitted_menus: []
       }
     }
   },
   computed: {
     ...mapGetters([
-      'permissionFilter',
-      'permissionName',
+      'defaultOptions',
+      'permissionConfigIds',
+      'permissionConfigData',
+      'permissionUserTotal',
+      'permissionUserLoading',
+      'permissionLoading',
       'permissionUser',
-      'userList'
+      'projectName',
+      'userSsoList'
     ]),
-    permissionOptions() {
-      if (this.permissionName) {
-        return defalutOptions.concat(this.permissionName)
-      } else {
-        return defalutOptions
-      }
+    userStatusOptions() {
+      return this.defaultOptions.concat(defaultUserStatus)
     },
-    computedPermission() {
-      return this.permissionFilter || this.permissAll
+    projectOptions() {
+      return this.defaultOptions.concat(this.projectName)
     }
   },
   created() {
-    this.fetchPermission()
-    this.fetchSsoUser()
+    this.getList()
   },
   methods: {
-    // 获取所有权限名称
-    fetchPermission() {
-      this.$store.dispatch('PERMISSION_FETCH_LIST')
-        .then(res => {
-          this.permissAll = res.data
-        })
-    },
-    // 获取所有SSO用户
-    fetchSsoUser() {
+    // 0.获取sso用户与权限配置信息
+    fetchInfo() {
       this.$store.dispatch('USER_FETCH_SSO')
+      this.$store.dispatch('PERMISSION_CONFIG')
     },
-    // 搜索搜索
+    // 1.获取权限用户列表
+    getList() {
+      this.$store.dispatch('PERMISSION_USER_LIST', this.listQuery)
+    },
+    // 2.搜索搜索
     handleFilter() {
-      const filterQuery = this.filterQuery
-      this.$store.commit('PERMISSION_FILTER', {filterQuery})
+      this.listQuery.page = 1
+      this.getList()
     },
-    // 新增员工
+    // 3.单页最大显示数据条数
+    handleSizeChange(val) {
+      this.listQuery.page_size = val
+      this.getList()
+    },
+    // 4.处理分页
+    handleCurrentChange(val) {
+      this.listQuery.page = val
+      this.getList()
+    },
+    // 5.编辑用户权限
+    handleEdit(index, row) {
+      // console.log(index, row)
+      if (!row) {
+        this.isLook = false
+        this.ruleFormTitle = '新增账号权限'
+        this.postType = 'PERMISSION_ADD'
+        // 初始化类别数据
+        this.ruleForm = {
+          username: '',
+          permitted_appids: [],
+          permitted_permissions: [],
+          permitted_menus: []
+        }
+      } else {
+        this.isLook = true
+        this.ruleFormTitle = '修改账号权限'
+        this.postType = 'PERMISSION_UPDATE'
+        // 填充对应类别数据
+        this.ruleForm = {
+          username: row.username,
+          permitted_appids: row.permitted_appids.split(','),
+          permitted_permissions: row.permitted_permissions.split(','),
+          permitted_menus: [],
+          id: row.id
+        }
+      }
+      this.dialogFormVisible = true
+    },
+    // 6.表单提交
     submitForm() {
       const that = this
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
-          this.listLoading = true
-          this.$store.dispatch('PERMISSION_USER_ADD', this.ruleForm)
+          // 自查询补全页面权限数据id
+          const tempMenu = []
+          this.permissionConfigIds.forEach(item => {
+            this.ruleForm.permitted_permissions.forEach(child => {
+              if (item.permission_id.includes(child)) {
+                if (!tempMenu.includes(item.id)) {
+                  tempMenu.push(item.id)
+                }
+                if (!tempMenu.includes(item.pid)) {
+                  tempMenu.push(item.pid)
+                }
+              }
+            })
+          })
+          this.ruleForm.permitted_menus = tempMenu
+
+          this.$store.dispatch(this.postType, this.ruleForm)
             .then(res => {
-              this.resetForm()
-              this.listLoading = false
               this.dialogFormVisible = false
               this.$message({
                 type: 'success',
                 message: '操作成功!',
                 duration: 1 * 1000,
                 onClose: function() {
-                  that.$store.dispatch('PERMISSION_FETCH_LIST')
-                    .then(() => {
-                      that.handleFilter()
-                    })
+                  that.handleFilter()
                 }
               })
-            })
-            .catch(err => {
-              this.listLoading = false
-              console.log(err.msg)
             })
         } else {
           return false
         }
       })
     },
-    // 取消新增员工
-    cancelSubmit() {
-      this.dialogFormVisible = false
-      this.resetForm()
-    },
-    // 重置表单
-    resetForm() {
-      this.$refs.ruleForm.resetFields()
-    },
-    // 删除权限
+    // 7.删除用户权限
     handleDelete(index, row) {
       // console.log(index, row)
-      this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+      const that = this
+      this.$confirm('此操作将禁用该账号权限，是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.listLoading = true
-        this.$store.dispatch('PERMISSION_DELETE', { id: row.id })
+        this.$store.dispatch('PERMISSION_DEL', { id: row.id })
           .then(res => {
-            this.listLoading = false
-            this.permissionFilter.splice(index, 1)
             this.$message({
               type: 'success',
-              message: '删除成功!'
+              message: '删除成功!',
+              onClose: function() {
+                that.handleFilter()
+              }
             })
-          })
-          .catch(err => {
-            this.listLoading = false
-            console.log(err.msg)
           })
       }).catch(() => {
         this.$message.info('已取消删除')
       })
     },
-    // 模糊搜索匹配增加员工权限
+    // 8.前端 - 模糊搜索匹配增加员工权限
     querySearch(queryString, cb) {
-      const tempData = this.userList
+      const tempData = this.userSsoList || []
       const results = queryString ? tempData.filter(this.createStateFilter(queryString)) : tempData
       clearTimeout(this.timeout)
       this.timeout = setTimeout(() => {
         cb(results)
       }, 200)
     },
-    // 返回搜索到用户 -- 支持英文名与中文
+    // 9.返回搜索到用户 -- 支持英文名与中文
     createStateFilter(queryString) {
       return (item) => {
         if (item.nickname) {
@@ -304,28 +399,76 @@ export default {
         }
       }
     },
-    handleSuggestions(item) {
-      this.ruleForm.ks = 1
+    // 10.模糊搜索匹配已有权限员工 -- 账号
+    querySearchUserName(username, cb) {
+      this.$store.dispatch('PERMISSION_USER_SEARCH', { username })
+        .then(res => {
+          const result = res.data.data.map(item => {
+            return {
+              id: item.id,
+              value: item.username
+            }
+          })
+          cb(result)
+        })
     },
-    // 模糊搜索匹配已有权限员工
-    querySearchUser(queryString, cb) {
-      const tempData = this.permissionUser
-      const results = queryString ? tempData.filter(this.createStateFilter(queryString)) : tempData
-      clearTimeout(this.timeout)
-      this.timeout = setTimeout(() => {
-        cb(results)
-      }, 200)
+    // 11.模糊搜索匹配已有权限员工 -- 姓名
+    querySearchUserTrueName(true_name, cb) {
+      this.$store.dispatch('PERMISSION_USER_SEARCH', { true_name })
+        .then(res => {
+          const result = res.data.data.map(item => {
+            return {
+              id: item.id,
+              value: item.true_name
+            }
+          })
+          cb(result)
+        })
     }
   }
 }
 </script>
 
-<style lang="scss" scoped>
-.hightlight-color{
-  background: #ff9632;
-  padding: 0 5px;
+<style lang="scss">
+.custom-dialog-permission{
+  .el-card__header{
+    padding: 8px 20px;
+    background: #F8F8F8;
+  }
 }
-.custom-autocomplete {
+</style>
+
+<style lang="scss" scoped>
+.custom-dialog-permission{
+  .el-card{
+    margin-bottom: 22px;
+  }
+  .card-title{
+    font-size: 16px;
+    font-weight: bold;
+  }
+  .custom-group{
+    float: left;
+    width: 280px;
+    border: 1px dashed #ebeef5;
+    margin-left: 20px;
+    margin-bottom: 20px;
+    padding-left: 20px;
+  }
+  .group-item{
+    padding-left: 30px;
+  }
+}
+
+em{
+  font-style: normal;
+  .hightlight-color{
+    background: #ff9632;
+    padding: 0 5px;
+  }
+}
+
+.custom-autocomplete{
   li {
     line-height: normal;
     padding: 7px;

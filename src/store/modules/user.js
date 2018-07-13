@@ -56,6 +56,7 @@ const user = {
     // sso登录
     ssoLogin({ commit }, payload) {
       return new Promise((resolve, reject) => {
+        console.log(payload.token)
         setToken(payload.token)
         commit('SET_TOKEN', payload.token)
         resolve()

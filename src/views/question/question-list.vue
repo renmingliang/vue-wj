@@ -43,7 +43,7 @@
               </el-col>
               <el-col :span="12">
                 <el-form-item label="问卷项目：">
-                  <el-select v-model="listQuery.project" placeholder="请选择">
+                  <el-select v-model="listQuery.project_id" placeholder="请选择">
                     <el-option
                       v-for="item in projectOptions"
                       :key="item.value"
@@ -65,131 +65,80 @@
     </div>
 
     <div class="common-wrap search-result">
-      <div class="search-list" v-loading="listLoading">
-        <ul>
-          <li class="list-item">
+      <div class="search-list" v-loading="questionLoading">
+        <ul v-if="questionList.length">
+          <li
+            class="list-item"
+            v-for="(item, index) in questionList"
+            :key="item.id">
             <div class="item-summary">
               <el-row>
                 <el-col :span="3">
-                  <p class="text-ellipsis">问卷ID：006</p>
+                  <p class="text-ellipsis">问卷ID：{{item.id}}</p>
                 </el-col>
-                <el-col :span="12">
-                  <p class="text-ellipsis">问卷标题：我是问卷的标题这个标题很长长长长长长长长长长长长我是问卷的标题这个标题很长长长长长长长长长长长长</p>
+                <el-col :span="11">
+                  <p class="text-ellipsis">问卷标题：{{item.title}}</p>
                 </el-col>
-                <el-col :span="2">
-                  <p class="text-center">已结束</p>
+                <el-col :span="3">
+                  <p class="text-center">{{item.status_name}}</p>
                 </el-col>
                 <el-col :span="5">
-                  <p class="text-ellipsis">所属项目：妖精的尾巴</p>
+                  <p class="text-ellipsis">所属项目：{{item.project_name}}</p>
                 </el-col>
                 <el-col :span="2">
                   <p class="text-right">
                     <el-tag
                       type="success"
-                      disable-transitions>通用型</el-tag>
+                      disable-transitions>{{item.type_name}}</el-tag>
                   </p>
                 </el-col>
               </el-row>
             </div>
             <div class="item-control">
               <el-row>
-                <el-col :span="15" class="text-center">
+                <el-col :span="14" class="text-center">
                   <el-col :span="8">
                     <div class="control-custom">
-                      <router-link :to="{ name: 'question-edit', params: {id: 1} }">问卷编辑</router-link>
+                      <router-link :to="{ name: 'question-edit', params: {id: item.id} }">问卷编辑</router-link>
                     </div>
                   </el-col>
                   <el-col :span="8">
                     <div class="control-custom">
-                      <router-link :to="{ name: 'question-analyse', params: {id: 1} }">问卷分析</router-link>
+                      <router-link :to="{ name: 'question-analyse', params: {id: item.id} }">问卷分析</router-link>
                     </div>
                   </el-col>
                   <el-col :span="8">
                     <div class="control-custom">
-                      <router-link :to="{ name: 'question-download', params: {id: 1} }">问卷下载</router-link>
+                      <router-link :to="{ name: 'question-download', params: {id: item.id} }">问卷下载</router-link>
                     </div>
                   </el-col>
                 </el-col>
-                <el-col :span="2">
-                  <div class="control-btn">
-                    <router-link :to="{name:'question-handle', params: {id: 1}}">
-                      <el-button size="mini" icon="el-icon-edit" plain>操作</el-button>
-                    </router-link>
-                  </div>
-                  <div class="control-btn"><el-button size="mini" icon="el-icon-document" type="info" plain>复制</el-button></div>
-                  <div class="control-btn"><el-button size="mini" icon="el-icon-delete" type="danger" plain>删除</el-button></div>
-                </el-col>
-                <el-col :span="7">
-                  <p>创建人：小A</p>
-                  <p>创建时间：2018-7-8 12:20:01</p>
-                  <p>审核人：小B</p>
-                  <p>问卷数：<b class="red">300</b>份</p>
-                </el-col>
-              </el-row>
-            </div>
-          </li>
-          <li class="list-item">
-            <div class="item-summary">
-              <el-row>
                 <el-col :span="3">
-                  <p class="text-ellipsis">问卷ID：006</p>
-                </el-col>
-                <el-col :span="12">
-                  <p class="text-ellipsis">问卷标题：我是问卷的标题这个标题很长长长长长长长长长长长长我是问卷的标题这个标题很长长长长长长长长长长长长</p>
-                </el-col>
-                <el-col :span="2">
-                  <p class="text-center">已结束</p>
-                </el-col>
-                <el-col :span="5">
-                  <p class="text-ellipsis">所属项目：妖精的尾巴</p>
-                </el-col>
-                <el-col :span="2">
-                  <p class="text-right">
-                    <el-tag
-                      type="success"
-                      disable-transitions>通用型</el-tag>
-                  </p>
-                </el-col>
-              </el-row>
-            </div>
-            <div class="item-control">
-              <el-row>
-                <el-col :span="15" class="text-center">
-                  <el-col :span="8">
-                    <div class="control-custom">
-                      <router-link :to="{ name: 'question-edit', params: {id: 2} }">问卷编辑</router-link>
-                    </div>
-                  </el-col>
-                  <el-col :span="8">
-                    <div class="control-custom">
-                      <router-link :to="{ name: 'question-analyse', params: {id: 2} }">问卷分析</router-link>
-                    </div>
-                  </el-col>
-                  <el-col :span="8">
-                    <div class="control-custom">
-                      <router-link :to="{ name: 'question-download', params: {id: 2} }">问卷下载</router-link>
-                    </div>
-                  </el-col>
-                </el-col>
-                <el-col :span="2">
                   <div class="control-btn">
-                    <router-link :to="{name:'question-handle', params: {id: 2}}">
+                    <router-link :to="{name:'question-handle', params: {id: item.id}}">
                       <el-button size="mini" icon="el-icon-edit" plain>操作</el-button>
                     </router-link>
                   </div>
-                  <div class="control-btn"><el-button size="mini" icon="el-icon-document" type="info" plain>复制</el-button></div>
-                  <div class="control-btn"><el-button size="mini" icon="el-icon-delete" type="danger" plain>删除</el-button></div>
+                  <div class="control-btn">
+                    <el-button @click="handleCopy(index, item)" size="mini" icon="el-icon-document" type="info" plain>复制</el-button>
+                  </div>
+                  <div class="control-btn">
+                    <el-button @click="handleDelete(index, item)" size="mini" icon="el-icon-delete" type="danger" plain>删除</el-button>
+                  </div>
                 </el-col>
                 <el-col :span="7">
-                  <p>创建人：小A</p>
-                  <p>创建时间：2018-7-8 12:20:01</p>
-                  <p>审核人：小B</p>
-                  <p>问卷数：<b class="red">300</b>份</p>
+                  <p>创建人：{{item.create_user}}</p>
+                  <p>创建时间：{{item.create_time}}</p>
+                  <p>审核人：{{item.verify_user}}</p>
+                  <p>问卷数：<b class="red">{{item.count}}</b> 份</p>
                 </el-col>
               </el-row>
             </div>
           </li>
         </ul>
+        <div v-else class="empty-box">
+          <span class="empty-tip">暂无数据</span>
+        </div>
       </div>
 
       <div class="search-pagination">
@@ -198,9 +147,9 @@
           @current-change="handleCurrentChange"
           :current-page="listQuery.page"
           :page-sizes="[10, 20, 30, 50]"
-          :page-size="listQuery.page_size"
+          :page-size="listQuery.size"
           layout="total, sizes, prev, pager, next, jumper"
-          :total="listTotal">
+          :total="questionTotal">
         </el-pagination>
       </div>
     </div>
@@ -208,56 +157,54 @@
 </template>
 
 <script>
-const defalutOptions = [
-  {label: '全部', value: '0'}
-]
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'question-list',
   data() {
     return {
-      listData: null,
-      listTotal: null,
-      listLoading: false,
       listQuery: {
         page: 1,
-        page_size: 10,
-        id: null,
+        size: 10,
         title: '',
         type: '',
         status: '',
-        project: ''
+        project_id: ''
       }
     }
   },
   created() {
+    // 获取问卷状态
+    this.$store.dispatch('QUESTION_FETCH_STATUS')
+    // 获取问卷类型
+    this.$store.dispatch('QUESTION_FETCH_TYPE')
     // 默认执行一次查询
     this.getList()
   },
   computed: {
+    ...mapGetters([
+      'defaultOptions',
+      'projectName',
+      'questionType',
+      'questionStatus',
+      'questionList',
+      'questionTotal',
+      'questionLoading'
+    ]),
     typeOptions() {
-      return defalutOptions
+      return this.defaultOptions.concat(this.questionType)
     },
     statusOptions() {
-      return defalutOptions
+      return this.defaultOptions.concat(this.questionStatus)
     },
     projectOptions() {
-      return defalutOptions
+      return this.defaultOptions.concat(this.projectName)
     }
   },
   methods: {
     // 0.获取数据
     getList() {
-      this.listLoading = true
-      setTimeout(() => {
-        this.listLoading = false
-      }, 1000)
-      /* this.$store.dispatch('IP_FETCH_LIST', this.listQuery)
-        .then(res => {
-          const result = res.data
-          this.listData = result.data
-          this.listTotal = +result.total_count
-        }) */
+      this.$store.dispatch('QUESTION_FETCH_LIST', this.listQuery)
     },
     // 1.搜索
     handleFilter() {
@@ -266,7 +213,7 @@ export default {
     },
     // 2.单页最大显示数据条数
     handleSizeChange(val) {
-      this.listQuery.page_size = val
+      this.listQuery.size = val
       this.getList()
     },
     // 3.处理分页
@@ -275,51 +222,57 @@ export default {
       this.getList()
     },
     // 4.复制
-    handleCopy(index, row, paramsId) {
-      console.log('copy')
+    handleCopy(index, item) {
+      const that = this
+      this.$store.dispatch('QUESTION_COPY', {question_id: item.id})
+        .then(() => {
+          this.$message({
+            type: 'success',
+            message: '复制成功!',
+            duration: 1 * 1000,
+            onClose: function() {
+              // 更新获取数据列表
+              that.getList()
+            }
+          })
+        })
+        .catch(() => {
+          this.$message.info('复制失败，请稍后重试')
+        })
     },
-    // 6.删除
-    handleDelete(index, row, paramsId) {
-      let delData, delType, params
-      if (paramsId) {
-        delType = 'IP_PROJECT_DELETE'
-        params = {ip_right_id: paramsId}
-      } else {
-        delData = this.listData
-        delType = 'IP_DELETE'
-        params = {id: row.id}
-      }
-      this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+    // 5.删除
+    handleDelete(index, item) {
+      const that = this
+      this.$confirm('此操作将永久删除该问卷, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.$store.dispatch(delType, params)
-          .then(res => {
-            if (delData) { delData.splice(index, 1) }
+        this.$store.dispatch('QUESTION_DEL', {question_id: item.id})
+          .then(() => {
             this.$message({
               type: 'success',
-              message: '删除成功!'
+              message: '删除成功!',
+              duration: 1 * 1000,
+              onClose: function() {
+                // 更新获取数据列表
+                that.getList()
+              }
             })
           })
-          .catch(err => {
-            console.log(err.msg)
-          })
       }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消删除'
-        })
+        this.$message.info('已取消删除')
       })
     },
     // 7.模糊搜索问卷标题
-    querySearch(name, cb) {
-      this.$store.dispatch('IP_SEARCH_NAME', { name })
+    querySearch(title, cb) {
+      this.$store.dispatch('QUESTION_SEARCH_TITLE', { title })
         .then(res => {
+          console.log(res.data)
           const result = res.data.map(item => {
             return {
               id: item.id,
-              value: item.name
+              value: item.title
             }
           })
           // 调用callback返回建议列表的数据
@@ -332,7 +285,6 @@ export default {
 
 <style rel="stylesheet/scss" lang="scss" scoped>
 .search-list{
-  background: rgba(222, 222, 239, 0.498039215686275);
   .list-item{
     background-color: rgb(242, 242, 242);
     &+.list-item{
@@ -367,6 +319,9 @@ export default {
           background-color: rgb(204, 204, 204);
         }
       }
+    }
+    .red{
+      font-weight: normal;
     }
   }
 }
