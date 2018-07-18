@@ -1,11 +1,11 @@
 <template>
   <div class="editor-container">
-    <sticky className="editor-topbar" :stickyTop="100">
+    <sticky v-if="!isLook" className="editor-topbar" :stickyTop="100">
       <div class="topbar-question">
         <ul>
           <li
             class="type-item"
-            v-for="type in questionsType"
+            v-for="type in questionsTemplate"
             :key="type.id">
             <span @click="createItem(type)">{{type.iTitle}}</span>
           </li>
@@ -14,34 +14,46 @@
       <div class="topbar-action">
         <el-button-group>
           <el-button @click="goBack" type="primary" icon="el-icon-arrow-left">返回</el-button>
-          <el-button type="primary">保存至草稿箱</el-button>
-          <el-button @click="saveQuestions" type="primary" icon="el-icon-view">预览</el-button>
+          <el-button @click="saveQuestions" type="primary">保存至草稿箱</el-button>
+          <router-link :to="{name: 'preview-look', params: {id: this.id}}" target="_blank">
+            <el-button type="primary" icon="el-icon-view">预览</el-button>
+          </router-link>
         </el-button-group>
       </div>
     </sticky>
 
-    <div class="editor-main" v-loading="loading">
+    <div class="editor-main" v-loading="questionLoading">
       <div class="survey-wrap">
         <div class="survey-main">
           <div class="survey-com">
             <div class="inner text-center">
-              <h1 id="title" class="com-content title-content" contenteditable=true>
-                {{questions.title}}
-              </h1>
+              <template v-if="!isLook">
+                <h1 id="title" class="com-content title-content" contenteditable="true">
+                  {{questions.title}}
+                </h1>
+              </template>
+              <template v-else>
+                <h1 class="com-content title-content" v-html="questions.title"></h1>
+              </template>
             </div>
           </div>
-          <div class="survey-com">
+          <!-- <div class="survey-com">
             <div class="inner">
-              <div id="prefix" class="com-content" contenteditable=true>
-                {{questions.prefix}}
-              </div>
+              <template v-if="!isLook">
+                <div id="prefix" class="com-content" contenteditable="true">
+                  {{questions.prefix}}
+                </div>
+              </template>
+              <template v-else>
+                <div class="com-content" v-html="questions.prefix"></div>
+              </template>
             </div>
-          </div>
+          </div> -->
           <div class="survey-question">
             <draggable
               element="ul"
               v-model="questions.lists"
-              :options="{ group: 'editor', disabled: viewEdit }"
+              :options="{ group: 'editor', disabled: isLook || viewEdit }"
               @end="dragItem">
               <li
                 v-for="(list, index) in questions.lists"
@@ -175,7 +187,7 @@
                   </div>
                 </template>
                 <template v-else>
-                  <div class="preview-question" :key="`${index + 1}-preview`">
+                  <div class="preview-question" :class="isLook?'not-move':''" :key="`${index + 1}-preview`">
                       <div class="inner">
                         <div class="title">
                           <span class="float-left">{{index + 1}}.</span>
@@ -191,9 +203,11 @@
                               :key="ind">
                               <input
                               class="options-type"
+                              :id="`${list.iID}_${ind+1}`"
+                              :name="list.iID"
                               :type="list.iType"
                               :value="option.value">
-                              <label class="options-txt clearfix">
+                              <label class="options-txt clearfix" :for="`${list.iID}_${ind+1}`">
                                 <span class="options-value float-left">{{option.value}}</span>
                                 <div v-html="option.txt" class="float-left"></div>
                               </label>
@@ -232,14 +246,16 @@
                                 </thead>
                                 <tbody>
                                   <tr
-                                    v-for="(subtitle, i) in list.iSubTitles"
-                                    :key="i">
+                                    v-for="(subtitle, index) in list.iSubTitles"
+                                    :key="index">
                                     <td v-html="subtitle.txt"></td>
                                     <td
                                       class="text-center"
                                       v-for="(option, ind) in list.iOptions"
                                       :key="ind">
                                         <input
+                                          :id="`${list.iID}_${index+1}_${ind+1}`"
+                                          :name="`${list.iID}_${index+1}`"
                                           :type="list.iType.split('_')[1]"
                                           :value="option.value">
                                     </td>
@@ -255,6 +271,7 @@
                               :key="ind">
                               <textarea
                                 class="options-input"
+                                :name="list.iID"
                                 :maxlength="list.iMaxlength"
                                 :placeholder="option.placeholder"
                                 rows="3"
@@ -263,26 +280,21 @@
                           </template>
                         </div>
                       </div>
-                      <div @click="enterItem(index+1)" class="mask-control"></div>
-                      <div class="control">
-                        <ul>
-                          <li @click="enterItem(index+1)" class="control-btn">编辑</li>
-                          <li @click="logicItem(list, index+1)" class="control-btn">逻辑</li>
-                          <li @click="copyItem(list)" class="control-btn">复制</li>
-                          <li @click="delItem(list)" class="control-btn">删除</li>
-                        </ul>
-                      </div>
+                      <template v-if="!isLook">
+                        <div @click="enterItem(index+1)" class="mask-control"></div>
+                        <div class="control">
+                          <ul>
+                            <li @click="enterItem(index+1)" class="control-btn">编辑</li>
+                            <li @click="logicItem(list, index+1)" class="control-btn">逻辑</li>
+                            <li @click="copyItem(list)" class="control-btn">复制</li>
+                            <li @click="delItem(list)" class="control-btn">删除</li>
+                          </ul>
+                        </div>
+                      </template>
                   </div>
                 </template>
               </li>
             </draggable>
-          </div>
-          <div class="survey-com suffix-content">
-            <div class="inner">
-              <div id="suffix" class="com-content" contenteditable=true>
-                {{questions.suffix}}
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -400,8 +412,19 @@
 
 <script>
 import Sticky from '@/components/Sticky'
-import { deepClone } from '@/utils'
 import draggable from 'vuedraggable'
+import { deepClone } from '@/utils'
+import { mapGetters } from 'vuex'
+
+const defaultForm = {
+  title: '问卷标题',
+  lists: []
+}
+
+const defaultLogicType = [
+  {label: '显示', value: 'display'},
+  {label: '跳转', value: 'goto'}
+]
 
 export default {
   name: 'question-preview',
@@ -420,7 +443,6 @@ export default {
     return {
       viewEdit: false,
       viewCreate: false,
-      loading: false,
       dialogVisible: false,
       dialogOtherVisible: false,
       logicType: 'display',
@@ -434,140 +456,84 @@ export default {
       editorData: {},
       editorClone: null,
       optionClone: null,
-      editorCom: ['title', 'prefix', 'suffix'],
-      questionsType: [
-        {
-          iCode: 1,
-          iFrom: '',
-          iType: 'radio',
-          iTitle: '单选题',
-          iRequired: true,
-          iRuleOther: {
-            'maxlength': '',
-            'required': false
-          },
-          iOptions: [
-            {
-              'txt': '选项',
-              'goto': '',
-              'display': ''
-            },
-            {
-              'txt': '选项',
-              'goto': '',
-              'display': ''
-            }
-          ]
-        },
-        {
-          iCode: 2,
-          iFrom: '',
-          iType: 'checkbox',
-          iTitle: '多选题',
-          iMaxlength: '',
-          iRequired: true,
-          iRuleOther: {
-            'maxlength': '',
-            'required': false
-          },
-          iOptions: [
-            {
-              'txt': '选项',
-              'display': ''
-            },
-            {
-              'txt': '选项',
-              'display': ''
-            }
-          ]
-        },
-        {
-          iCode: 3,
-          iFrom: '',
-          iType: 'textarea',
-          iTitle: '填空题',
-          iMaxlength: '',
-          iRequired: true,
-          iOptions: [
-            {
-              'placeholder': '请输入内容'
-            }
-          ]
-        },
-        {
-          iCode: 4,
-          iFrom: '',
-          iType: 'matrix_radio',
-          iTitle: '矩阵单选题',
-          iRequired: true,
-          iSubTitles: [
-            {
-              'txt': '问题'
-            },
-            {
-              'txt': '问题'
-            }
-          ],
-          iOptions: [
-            {
-              'txt': '选项'
-            },
-            {
-              'txt': '选项'
-            }
-          ]
-        },
-        {
-          iCode: 5,
-          iFrom: '',
-          iType: 'matrix_checkbox',
-          iTitle: '矩阵多选题',
-          iRequired: true,
-          iSubTitles: [
-            {
-              'txt': '问题'
-            },
-            {
-              'txt': '问题'
-            }
-          ],
-          iOptions: [
-            {
-              'txt': '选项'
-            },
-            {
-              'txt': '选项'
-            }
-          ]
-        }
-      ],
-      letters: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N'],
-      questions: {
-        title: '问卷标题',
-        prefix: '问卷描述及其目的',
-        suffix: '问卷提交成功文本',
-        lists: []
-      }
+      editorCom: ['title'],
+      questions: deepClone(defaultForm)
     }
   },
   computed: {
     CKEDITOR() {
       return window.CKEDITOR
-    }
+    },
+    logicTypeOptions() {
+      return defaultLogicType
+    },
+    ...mapGetters([
+      'questionLoading',
+      'questionsTemplate',
+      'questionLetters'
+    ])
   },
   created() {
-    this.initCKEditor()
+    if (!this.isLook) {
+      this.initCKEditor()
+    }
+    this.fetchData()
   },
   methods: {
+    // 0.返回
     goBack() {
-      window.history.length > 1
-        ? this.$router.go(-1)
-        : this.$router.push('/')
+      window.history.length > 1 ? this.$router.go(-1) : this.$router.push('/')
     },
+    // 0.1.获取问卷数据
+    fetchData() {
+      this.$store.dispatch('QUESTION_ORIGIN_DETAIL', {question_id: this.id})
+        .then(res => {
+          const tempJson = JSON.parse(res.data)
+          if (tempJson) {
+            this.questions = tempJson
+          } else {
+            this.questions = deepClone(defaultForm)
+          }
+        })
+    },
+    // 0.2.保存至草稿
     saveQuestions() {
-      console.log('保存', this.questions)
+      const params = Object.assign({}, this.questions, {question_id: this.id})
+      console.log(params)
+
+      this.$store.dispatch('QUESTION_ORIGIN_IMPORT', params)
+        .then(res => {
+          this.$confirm('该问卷已成功保存至草稿箱，是否继续相关操作？', '提示', {
+            closeOnClickModal: false,
+            confirmButtonText: '前往操作',
+            cancelButtonText: '取消',
+            type: 'success'
+          }).then(() => {
+            this.$router.push({name: 'question-handle', params: {id: this.id}})
+          }).catch(() => {
+            this.$router.push({name: 'question-list'})
+          })
+        })
     },
-    // 1.根据选项逻辑的iID提示对应题目
+    // 1.初始化公用富文本框
+    initCKEditor() {
+      this.$nextTick(() => {
+        this.editorCom.forEach(item => {
+          this.CKEDITOR.inline(item)
+        })
+
+        this.$once('hook:beforeDestroy', function () {
+          this.destoryCKEditor()
+        })
+      })
+    },
+    // 2.摧毁所有富文本框
+    destoryCKEditor() {
+      Object.values(this.CKEDITOR.instances).forEach(instace => {
+        instace.destroy()
+      })
+    },
+    // 3.根据选项逻辑的iID提示对应题目
     getQuestionIndex(val, ind, index) {
       const arr = val.split(',')
       const temp = []
@@ -587,24 +553,6 @@ export default {
         })
       })
       return temp.join('、')
-    },
-    // 2.初始化公用富文本框
-    initCKEditor() {
-      this.$nextTick(() => {
-        this.editorCom.forEach(item => {
-          this.CKEDITOR.inline(item)
-        })
-
-        this.$once('hook:beforeDestroy', function () {
-          this.destoryCKEditor()
-        })
-      })
-    },
-    // 3.摧毁所有富文本框
-    destoryCKEditor() {
-      Object.values(this.CKEDITOR.instances).forEach(instace => {
-        instace.destroy()
-      })
     },
     // 4.拖拽结束更新富文本框
     dragItem(evt) {
@@ -757,7 +705,16 @@ export default {
     },
     // 14.切换逻辑类型前提问
     beforeToggle(activeName, oldActiveName) {
-      return this.$confirm(`切换到${activeName}逻辑设置后，问卷现有的${oldActiveName}逻辑设置将会失效，是否继续操作？`)
+      let nextName, prevName
+      this.logicTypeOptions.forEach(item => {
+        if (item.value === activeName) {
+          nextName = item.label
+        }
+        if (item.value === oldActiveName) {
+          prevName = item.label
+        }
+      })
+      return this.$confirm(`切换到 ${nextName} 逻辑设置后，问卷现有的 ${prevName} 逻辑设置将会失效，是否继续操作？`)
     },
     // 15.复制
     copyItem(item) {
@@ -777,30 +734,20 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        const id = item.id
         const tempInd = this.questions.lists.indexOf(item)
-        // 未录入提交到后台的情况下删除，不发生请求
-        if (!id && tempInd !== -1) {
-          this.updateDataEditor(tempInd)
-        } else {
-          // 已有id情况，发送删除请求
-          this.loading = true
-          setTimeout(() => {
-            if (tempInd !== -1) {
+        if (tempInd !== -1) {
+          this.$message({
+            type: 'success',
+            message: '删除成功!',
+            onClose: () => {
               this.updateDataEditor(tempInd)
             }
-            this.loading = false
-            this.$message({
-              type: 'success',
-              message: '删除成功!'
-            })
-          }, 1000)
+          })
+        } else {
+          this.$message.info('操作有误，请稍后重试')
         }
       }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消删除'
-        })
+        this.$message.info('已取消删除')
       })
     },
     // 17.创建富文本
@@ -857,7 +804,7 @@ export default {
         const temp = this.editorData[num][`${num}_${index + 1}`]
         if (!option.input && temp) {
           option.txt = temp
-          option.value = this.letters[index]
+          option.value = this.questionLetters[index]
         }
       })
       // 若存在矩阵题
@@ -872,7 +819,7 @@ export default {
       // 若含有其他项，则将其追加到选项中
       if (this.addInput[num] && isAddInput) {
         tempData.iOptions.push({
-          'value': this.letters[tempData.iOptions.length],
+          'value': this.questionLetters[tempData.iOptions.length],
           'txt': isAddInput,
           'input': true,
           'placeholder': '请输入内容'
@@ -887,7 +834,7 @@ export default {
           this.editorData[num][tempName] = instace.getData()
         } else {
           this.editorData[tempName] = instace.getData()
-          this.questions[tempName] = instace.getData()
+          // this.questions[tempName] = instace.getData()
         }
       })
       console.log(this.editorData)
@@ -1200,6 +1147,9 @@ export default {
     zoom: 1;
     overflow: hidden;
     cursor: move;
+    &.not-move{
+      cursor: default;
+    }
     &:hover{
       background-color: #fafafa;
       border-top: 1px solid #e0e0e0;

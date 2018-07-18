@@ -29,45 +29,6 @@ const award = {
   },
 
   actions: {
-    // 问卷设置 --> 添加奖品
-    ITEM_CREATE({ commit }, params) {
-      return new Promise((resolve, reject) => {
-        api.itemCreate(params)
-          .then(res => {
-            console.log(res)
-            resolve(res)
-          })
-          .catch(error => {
-            console.log(error)
-          })
-      })
-    },
-    // 问卷设置 --> 编辑奖品
-    ITEM_EDIT({ commit }, params) {
-      return new Promise((resolve, reject) => {
-        api.itemEdit(params)
-          .then(res => {
-            console.log(res)
-            resolve(res)
-          })
-          .catch(error => {
-            console.log(error)
-          })
-      })
-    },
-    // 问卷设置 --> 删除奖品
-    ITEM_DEL({ commit }, params) {
-      return new Promise((resolve, reject) => {
-        api.itemDel(params)
-          .then(res => {
-            console.log(res)
-            resolve(res)
-          })
-          .catch(error => {
-            console.log(error)
-          })
-      })
-    },
     // 问卷设置 --> CP奖品
     ITEM_CP_LIST({ commit }, params) {
       return new Promise((resolve, reject) => {

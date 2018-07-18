@@ -8,7 +8,7 @@
         highlight-current-row
         border
         stripe
-        v-loading="infoLoading"
+        v-loading="questionLoading"
         :data="infoData">
         <el-table-column
           prop="id"
@@ -21,22 +21,22 @@
           align="center">
         </el-table-column>
         <el-table-column
-          prop="type"
+          prop="type_name"
           label="问卷类型"
           align="center">
         </el-table-column>
         <el-table-column
-          prop="project"
+          prop="project_name"
           label="所属项目"
           align="center">
         </el-table-column>
         <el-table-column
-          prop="starttime"
+          prop="start_date"
           label="开始时间"
           align="center">
         </el-table-column>
         <el-table-column
-          prop="endtime"
+          prop="end_date"
           label="结束时间"
           align="center">
         </el-table-column>
@@ -48,25 +48,52 @@
       </el-table>
     </el-card>
 
-    <el-card class="box-card" shadow="never">
+    <el-card v-if="questionAnalyse" class="box-card" shadow="never">
       <div slot="header" class="card-header">
         <span class="card-title">问卷分析</span>
         <div class="card-control">
           <el-button @click="handleExport" type="text"><i class="el-icon-download"></i>下载报告</el-button>
         </div>
       </div>
-      <div>
-        <el-button @click="handlePie" size="medium">饼图</el-button>
-        <el-button @click="handleYBar" size="medium">条形图</el-button>
-        <el-button @click="handleXBar" size="medium">柱状图</el-button>
-        <el-button @click="handleShow" size="medium">隐藏图表</el-button>
+      <div class="analyse-list">
+        <div
+          class="analyse-item"
+          v-for="(item, index) in questionAnalyse"
+          :key="index">
+          <h3 class="analyse-item-title">{{item.title}}</h3>
+          <el-table
+            class="analyse-item-table"
+            border
+            stripe
+            :data="item.list">
+            <el-table-column
+              v-for="(v, k, i) in item.label"
+              :key="i"
+              :prop="k"
+              :label="v"
+              align="center">
+            </el-table-column>
+          </el-table>
+          <template v-if="item.type !== '3'">
+            <div class="analyse-item-handle text-right">
+              <template v-if="!(item.type === '4' || item.type === '5')">
+                <el-button @click="handlePie(item, index)" size="medium">饼图</el-button>
+              </template>
+              <el-button @click="handleYBar(item, index)" size="medium">条形图</el-button>
+              <el-button @click="handleXBar(item, index)" size="medium">柱状图</el-button>
+              <el-button @click="handleShow(index)" size="medium">隐藏图表</el-button>
+            </div>
+            <div v-if="!hiddenEchart[index]" :id="`main-${index}`" style="width: 100%;height: 500px;"></div>
+          </template>
+        </div>
       </div>
-      <div v-if="isShow" id="main" style="width: 100%;height: 500px;"></div>
     </el-card>
   </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 // 引入 ECharts 主模块
 var echarts = require('echarts/lib/echarts')
 // 引入柱状图
@@ -80,193 +107,299 @@ require('echarts/lib/component/legend')
 require('echarts/lib/component/toolbox')
 require('echarts/lib/component/legendScroll')
 
-const defaultInfo = [
-  {
-    id: 1,
-    title: '问卷的标题信息',
-    type: '游戏内置型',
-    project: '锦绣未央',
-    starttime: '2018-2-3 10:00:00',
-    endtime: '2018-9-3 10:00:00',
-    count: 31254
-  }
-]
-
 export default {
   name: 'question-analyse',
   data() {
     return {
-      isShow: true,
-      infoLoading: false,
-      infoData: null
+      id: this.$route.params.id,
+      infoData: null,
+      questionAnalyse: null,
+      hiddenEchart: {}
     }
   },
   computed: {
-    myChart() {
-      // 基于准备好的dom，初始化echarts实例
-      return echarts.init(document.getElementById('main'))
-    }
+    ...mapGetters([
+      'questionLoading'
+    ])
   },
   created() {
     this.getInfo()
+    this.getAnswer()
   },
   methods: {
     // 0.获取问卷信息
     getInfo() {
-      this.infoLoading = true
-      setTimeout(() => {
-        this.infoData = defaultInfo
-        this.infoLoading = false
-      }, 1000)
+      this.$store.dispatch('QUESTION_FETCH_DETAIL', {question_id: this.id})
+        .then(res => {
+          const temp = res.data
+          this.infoData = [temp]
+        })
     },
-    // 1.导出数据
+    // 1.问卷答案分析
+    getAnswer() {
+      this.$store.dispatch('QUESTION_ANSWER_ANALYSE', {question_id: this.id})
+        .then(res => {
+          this.questionAnalyse = res.data
+        })
+    },
+    // 2.导出数据
     handleExport() {
       console.log('导出数据')
     },
-    // 2.隐藏图表
-    handleShow() {
-      this.isShow = false
+    // 3.隐藏图表
+    handleShow(index) {
+      this.$set(this.hiddenEchart, index, true)
     },
-    // 3.echart图表绘制
-    handlePie() {
-      this.myChart.setOption({
-        title: {
-          text: '某站点用户访问来源',
-          subtext: '纯属虚构',
-          x: 'center'
-        },
-        toolbox: {
-          feature: {
-            saveAsImage: {}
-          }
-        },
-        tooltip: {
-          trigger: 'item',
-          formatter: '{a} <br/>{b} : {c} ({d}%)'
-        },
-        legend: {
-          orient: 'vertical',
-          left: 'right',
-          top: 40,
-          type: 'scroll',
-          data: ['直接访问', '邮件营销', '联盟广告', '视频广告', '搜索引擎']
-        },
-        series: [
-          {
-            name: '访问来源',
-            type: 'pie',
-            radius: '55%',
-            center: ['50%', '60%'],
-            data: [
-              {value: 335, name: '直接访问'},
-              {value: 310, name: '邮件营销'},
-              {value: 234, name: '联盟广告'},
-              {value: 135, name: '视频广告'},
-              {value: 1548, name: '搜索引擎'}
-            ],
-            itemStyle: {
-              emphasis: {
-                shadowBlur: 10,
-                shadowOffsetX: 0,
-                shadowColor: 'rgba(0, 0, 0, 0.5)'
-              }
-            }
-          }
-        ]
-      }, true)
+    // 4.图表适配
+    resizeChart(chart) {
+      function resize() {
+        chart.resize()
+      }
+      window.addEventListener('resize', resize)
+
+      this.$once('hook:beforeDestroy', function () {
+        window.removeEventListener('resize', resize)
+      })
     },
-    handleYBar() {
-      this.myChart.setOption({
-        title: {
-          text: '世界人口总量',
-          subtext: '数据来自网络'
-        },
-        toolbox: {
-          feature: {
-            saveAsImage: {}
-          }
-        },
-        tooltip: {
-          trigger: 'axis',
-          axisPointer: {
-            type: 'shadow'
-          }
-        },
-        legend: {
-          data: ['2011年', '2012年']
-        },
-        grid: {
-          left: '3%',
-          right: '4%',
-          bottom: '3%',
-          containLabel: true
-        },
-        xAxis: {
-          type: 'value',
-          boundaryGap: [0, 0.01]
-        },
-        yAxis: {
-          type: 'category',
-          data: ['巴西', '印尼', '美国', '印度', '中国', '世界人口(万)']
-        },
-        series: [
-          {
-            name: '2011年',
-            type: 'bar',
-            data: [18203, 23489, 29034, 104970, 131744, 630230],
-            label: {
-              normal: {
-                position: 'right',
-                show: true
-              }
+    // 5.echart图表绘制
+    handlePie(item, index) {
+      this.$set(this.hiddenEchart, index, false)
+
+      const legendData = item.list.map(v => {
+        return v.option
+      })
+      const seriesData = item.list.map(v => {
+        return { value: v.num, name: v.option }
+      })
+
+      this.$nextTick(() => {
+        // 基于准备好的dom，初始化echarts实例
+        const tempId = `main-${index}`
+        const myChart = echarts.init(document.getElementById(tempId))
+        myChart.setOption({
+          title: {
+            text: '',
+            subtext: '',
+            x: 'center'
+          },
+          toolbox: {
+            feature: {
+              saveAsImage: {}
             }
           },
-          {
-            name: '2012年',
-            type: 'bar',
-            data: [19325, 23438, 31000, 121594, 134141, 681807],
-            label: {
-              normal: {
-                position: 'right',
-                show: true
+          tooltip: {
+            trigger: 'item',
+            formatter: '{a} <br/>{b} : {c} ({d}%)'
+          },
+          legend: {
+            orient: 'vertical',
+            left: 'right',
+            top: 40,
+            type: 'scroll',
+            data: legendData
+          },
+          series: [
+            {
+              name: item.title,
+              type: 'pie',
+              radius: '55%',
+              center: ['50%', '60%'],
+              data: seriesData,
+              itemStyle: {
+                emphasis: {
+                  shadowBlur: 10,
+                  shadowOffsetX: 0,
+                  shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
               }
             }
-          }
-        ]
-      }, true)
+          ]
+        }, true)
+
+        this.resizeChart(myChart)
+      })
     },
-    handleXBar() {
-      this.myChart.setOption({
-        title: {
-          text: 'ECharts 入门示例'
-        },
-        tooltip: {},
-        toolbox: {
-          feature: {
-            saveAsImage: {}
+    handleYBar(item, index) {
+      this.$set(this.hiddenEchart, index, false)
+      let axisData, series, legendData
+
+      const seriesConfig = {
+        name: item.title,
+        type: 'bar',
+        label: {
+          normal: {
+            position: 'right',
+            show: true
           }
-        },
-        xAxis: {
-          data: ['衬衫', '羊毛衫', '雪纺衫', '裤子', '高跟鞋', '袜子']
-        },
-        yAxis: {},
-        series: [{
-          name: '销量',
-          type: 'bar',
-          data: [5, 20, 36, 10, 10, 20],
-          label: {
-            normal: {
-              position: 'top',
-              show: true
+        }
+      }
+      const isMatrix = item.type === '4' || item.type === '5'
+
+      if (isMatrix) {
+        const keys = Object.keys(item.label).splice(1)
+        legendData = Object.values(item.label).splice(1).map((v, i) => {
+          return `${keys[i]}：${v}`
+        })
+
+        const seriesData = item.list.map(v => {
+          const vals = Object.values(v).splice(1)
+          return vals.map((k, i) => {
+            // 注意这里需去除后台返回的百分数据
+            const sub = k.indexOf('(')
+            return { value: k.substr(0, sub), name: legendData[i] }
+          })
+        })
+
+        axisData = item.list.map(v => {
+          return v.sub_title
+        })
+
+        series = seriesData.map((s, i) => {
+          return Object.assign({data: s}, seriesConfig, {name: legendData[i]})
+        })
+      } else {
+        const seriesData = item.list.map(v => {
+          return { value: v.num, name: v.option }
+        })
+        series = [Object.assign({data: seriesData}, seriesConfig)]
+
+        axisData = item.list.map(v => {
+          return v.option
+        })
+      }
+
+      this.$nextTick(() => {
+        // 基于准备好的dom，初始化echarts实例
+        const tempId = `main-${index}`
+        const myChart = echarts.init(document.getElementById(tempId))
+        myChart.setOption({
+          title: {
+            text: '',
+            subtext: ''
+          },
+          toolbox: {
+            feature: {
+              saveAsImage: {}
             }
+          },
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+              type: 'shadow'
+            }
+          },
+          legend: {
+            data: legendData
+          },
+          xAxis: {
+            type: 'value',
+            boundaryGap: [0, 0.01]
+          },
+          yAxis: {
+            type: 'category',
+            data: axisData
+          },
+          series
+        }, true)
+        this.resizeChart(myChart)
+      })
+    },
+    handleXBar(item, index) {
+      this.$set(this.hiddenEchart, index, false)
+      let axisData, series, legendData
+
+      const seriesConfig = {
+        name: item.title,
+        type: 'bar',
+        label: {
+          normal: {
+            position: 'top',
+            show: true
           }
-        }]
-      }, true)
+        }
+      }
+      const isMatrix = item.type === '4' || item.type === '5'
+
+      if (isMatrix) {
+        const keys = Object.keys(item.label).splice(1)
+        legendData = Object.values(item.label).splice(1).map((v, i) => {
+          return `${keys[i]}：${v}`
+        })
+
+        const seriesData = item.list.map(v => {
+          const vals = Object.values(v).splice(1)
+          return vals.map((k, i) => {
+            // 注意这里需去除后台返回的百分数据
+            const sub = k.indexOf('(')
+            return { value: k.substr(0, sub), name: legendData[i] }
+          })
+        })
+
+        axisData = item.list.map(v => {
+          return v.sub_title
+        })
+
+        series = seriesData.map((s, i) => {
+          return Object.assign({data: s}, seriesConfig, {name: legendData[i]})
+        })
+      } else {
+        const seriesData = item.list.map(v => {
+          return { value: v.num, name: v.option }
+        })
+        series = [Object.assign({data: seriesData}, seriesConfig)]
+
+        axisData = item.list.map(v => {
+          return v.option
+        })
+      }
+
+      this.$nextTick(() => {
+        // 基于准备好的dom，初始化echarts实例
+        const tempId = `main-${index}`
+        const myChart = echarts.init(document.getElementById(tempId))
+        myChart.setOption({
+          title: {
+            text: ''
+          },
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+              type: 'shadow'
+            }
+          },
+          toolbox: {
+            feature: {
+              saveAsImage: {}
+            }
+          },
+          legend: {
+            data: legendData
+          },
+          xAxis: {
+            type: 'category',
+            data: axisData
+          },
+          yAxis: {
+            type: 'value',
+            boundaryGap: [0, 0.01]
+          },
+          series
+        }, true)
+        this.resizeChart(myChart)
+      })
     }
   }
 }
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scoped>
-
+.analyse-item-title{
+  font-size: 16px;
+  font-weight: 400;
+  color: #333333;
+  margin-bottom: 10px;
+}
+.analyse-item-table, .analyse-item-handle{
+  margin-bottom: 20px;
+}
 </style>

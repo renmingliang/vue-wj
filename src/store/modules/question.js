@@ -23,7 +23,118 @@ const question = {
     questionType: state => state.questionType,
     questionId: state => state.questionId,
     questionList: state => state.questionList,
-    questionTotal: state => state.questionTotal
+    questionTotal: state => state.questionTotal,
+    questionsTemplate: () => {
+      return [
+        {
+          iCode: 1,
+          iFrom: '',
+          iType: 'radio',
+          iTitle: '单选题',
+          iRequired: true,
+          iRuleOther: {
+            'maxlength': '',
+            'required': false
+          },
+          iOptions: [
+            {
+              'txt': '选项',
+              'goto': '',
+              'display': ''
+            },
+            {
+              'txt': '选项',
+              'goto': '',
+              'display': ''
+            }
+          ]
+        },
+        {
+          iCode: 2,
+          iFrom: '',
+          iType: 'checkbox',
+          iTitle: '多选题',
+          iMaxlength: '',
+          iRequired: true,
+          iRuleOther: {
+            'maxlength': '',
+            'required': false
+          },
+          iOptions: [
+            {
+              'txt': '选项',
+              'display': ''
+            },
+            {
+              'txt': '选项',
+              'display': ''
+            }
+          ]
+        },
+        {
+          iCode: 3,
+          iFrom: '',
+          iType: 'textarea',
+          iTitle: '填空题',
+          iMaxlength: '',
+          iRequired: true,
+          iOptions: [
+            {
+              'placeholder': '请输入内容'
+            }
+          ]
+        },
+        {
+          iCode: 4,
+          iFrom: '',
+          iType: 'matrix_radio',
+          iTitle: '矩阵单选题',
+          iRequired: true,
+          iSubTitles: [
+            {
+              'txt': '问题'
+            },
+            {
+              'txt': '问题'
+            }
+          ],
+          iOptions: [
+            {
+              'txt': '选项'
+            },
+            {
+              'txt': '选项'
+            }
+          ]
+        },
+        {
+          iCode: 5,
+          iFrom: '',
+          iType: 'matrix_checkbox',
+          iTitle: '矩阵多选题',
+          iRequired: true,
+          iSubTitles: [
+            {
+              'txt': '问题'
+            },
+            {
+              'txt': '问题'
+            }
+          ],
+          iOptions: [
+            {
+              'txt': '选项'
+            },
+            {
+              'txt': '选项'
+            }
+          ]
+        }
+      ]
+    },
+    questionLetters: () => {
+      return ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N']
+    }
   },
 
   mutations: {
@@ -49,7 +160,7 @@ const question = {
     QUESTION_STATUS: (state, payload) => {
       state.questionStatus = payload.list.map((item, index) => {
         return {
-          value: index,
+          value: String(index),
           label: item
         }
       })
@@ -58,7 +169,7 @@ const question = {
     QUESTION_TYPE: (state, payload) => {
       state.questionType = payload.list.map((item, index) => {
         return {
-          value: index,
+          value: String(index),
           label: item
         }
       })
@@ -67,11 +178,11 @@ const question = {
   },
 
   actions: {
-    // 创建
+    // 设置创建
     QUESTION_CREATE({ commit }, params) {
       return new Promise((resolve, reject) => {
         commit('LIST_LOADING', { loading: true })
-        api.questionCreate(params)
+        api.questionSettingCreate(params)
           .then(res => {
             console.log(res)
             commit('LIST_LOADING', { loading: false })
@@ -83,11 +194,43 @@ const question = {
           })
       })
     },
-    // 创建
+    // 设置编辑
     QUESTION_EDIT({ commit }, params) {
       return new Promise((resolve, reject) => {
         commit('LIST_LOADING', { loading: true })
-        api.questionEdit(params)
+        api.questionSettingEdit(params)
+          .then(res => {
+            console.log(res)
+            commit('LIST_LOADING', { loading: false })
+            resolve(res)
+          })
+          .catch(error => {
+            commit('LIST_LOADING', { loading: false })
+            console.log(error)
+          })
+      })
+    },
+    // 问题导入
+    QUESTION_ORIGIN_IMPORT({ commit }, params) {
+      return new Promise((resolve, reject) => {
+        commit('LIST_LOADING', { loading: true })
+        api.questionOriginImport(params)
+          .then(res => {
+            console.log(res)
+            commit('LIST_LOADING', { loading: false })
+            resolve(res)
+          })
+          .catch(error => {
+            commit('LIST_LOADING', { loading: false })
+            console.log(error)
+          })
+      })
+    },
+    // 问题详情
+    QUESTION_ORIGIN_DETAIL({ commit }, params) {
+      return new Promise((resolve, reject) => {
+        commit('LIST_LOADING', { loading: true })
+        api.questionOriginDetail(params)
           .then(res => {
             console.log(res)
             commit('LIST_LOADING', { loading: false })
@@ -148,7 +291,7 @@ const question = {
     QUESTION_FETCH_DETAIL({ commit }, params) {
       return new Promise((resolve, reject) => {
         commit('LIST_LOADING', { loading: true })
-        api.questionDetail(params)
+        api.questionSettingDetail(params)
           .then(res => {
             console.log(res)
             commit('LIST_LOADING', { loading: false })
@@ -272,10 +415,10 @@ const question = {
           })
       })
     },
-    // 问卷分析
-    QUESTION_ANALYSE({ commit }, params) {
+    // 问卷答案分析
+    QUESTION_ANSWER_ANALYSE({ commit }, params) {
       return new Promise((resolve, reject) => {
-        api.questionAnalyse(params)
+        api.answerAnalyse(params)
           .then(res => {
             console.log(res)
             resolve(res)
@@ -285,23 +428,10 @@ const question = {
           })
       })
     },
-    // 问卷导出
-    QUESTION_EXPORT({ commit }, params) {
+    // 问卷答题记录
+    QUESTION_ANSWER_LIST({ commit }, params) {
       return new Promise((resolve, reject) => {
-        api.questionExport(params)
-          .then(res => {
-            console.log(res)
-            resolve(res)
-          })
-          .catch(error => {
-            console.log(error)
-          })
-      })
-    },
-    // 下载报告
-    QUESTION_DOWNLOAD({ commit }, params) {
-      return new Promise((resolve, reject) => {
-        api.questionDownload(params)
+        api.answerList(params)
           .then(res => {
             console.log(res)
             resolve(res)

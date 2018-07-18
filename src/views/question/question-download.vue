@@ -8,7 +8,7 @@
         highlight-current-row
         border
         stripe
-        v-loading="infoLoading"
+        v-loading="questionLoading"
         :data="infoData">
         <el-table-column
           prop="id"
@@ -21,22 +21,22 @@
           align="center">
         </el-table-column>
         <el-table-column
-          prop="type"
+          prop="type_name"
           label="问卷类型"
           align="center">
         </el-table-column>
         <el-table-column
-          prop="project"
+          prop="project_name"
           label="所属项目"
           align="center">
         </el-table-column>
         <el-table-column
-          prop="starttime"
+          prop="start_date"
           label="开始时间"
           align="center">
         </el-table-column>
         <el-table-column
-          prop="endtime"
+          prop="end_date"
           label="结束时间"
           align="center">
         </el-table-column>
@@ -60,7 +60,6 @@
           highlight-current-row
           border
           stripe
-          v-loading="listLoading"
           :data="listData">
           <el-table-column
             fixed
@@ -90,17 +89,22 @@
             align="center">
           </el-table-column>
           <el-table-column
-            prop="answer_time"
+            prop="send_time"
             label="提交时间"
             align="center">
           </el-table-column>
           <el-table-column
-            prop="answer_diff"
+            prop="use_time"
             label="耗时（秒）"
             align="center">
           </el-table-column>
           <el-table-column
-            prop="answer_area"
+            prop="ip"
+            label="地区"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            prop="region"
             label="地区"
             align="center">
           </el-table-column>
@@ -110,9 +114,12 @@
             <template slot-scope="scope">
               <span class="hover-show">
                 <router-link
-                  :to="{name:'question-preview', params: {id: scope.row.id}}"
+                  :to="{name:'preview-look', params: {id: scope.row.id}}"
                   class="hover-link"
-                  target="_blank">查看</router-link>
+                  target="_blank">
+                  <i class="el-icon-view"></i>
+                  查看
+                </router-link>
               </span>
             </template>
           </el-table-column>
@@ -123,7 +130,7 @@
             @current-change="handleCurrentChange"
             :current-page="listQuery.page"
             :page-sizes="[10, 20, 30, 50]"
-            :page-size="listQuery.page_size"
+            :page-size="listQuery.size"
             layout="total, sizes, prev, pager, next, jumper"
             :total="listTotal">
           </el-pagination>
@@ -134,74 +141,51 @@
 </template>
 
 <script>
-const defaultInfo = [
-  {
-    id: 1,
-    title: '问卷的标题信息',
-    type: '游戏内置型',
-    project: '锦绣未央',
-    starttime: '2018-2-3 10:00:00',
-    endtime: '2018-9-3 10:00:00',
-    count: 31254
-  }
-]
-
-const defaultList = [
-  {
-    id: 1,
-    role_id: 1003,
-    role_name: '角色的昵称名',
-    role_level: 50,
-    server_name: '服务器的名称',
-    answer_time: '2018-8-8 12:00:01',
-    answer_diff: '190s',
-    answer_ip: '202.113.112.125',
-    answer_area: '广东深圳'
-  }
-]
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'question-download',
   data() {
     return {
-      infoLoading: false,
-      listLoading: false,
+      id: this.$route.params.id,
       infoData: null,
       listData: null,
       listTotal: null,
       listQuery: {
         page: 1,
-        page_size: 10
+        size: 10
       }
     }
   },
   computed: {
+    ...mapGetters([
+      'questionLoading'
+    ])
   },
   created() {
-    this.getList()
     this.getInfo()
+    this.getList()
   },
   methods: {
     // 0.获取问卷信息
     getInfo() {
-      this.infoLoading = true
-      setTimeout(() => {
-        this.infoData = defaultInfo
-        this.infoLoading = false
-      }, 1000)
+      this.$store.dispatch('QUESTION_FETCH_DETAIL', {question_id: this.id})
+        .then(res => {
+          const temp = res.data
+          this.infoData = [temp]
+        })
     },
     // 1.获取答题列表数据
     getList() {
-      this.listLoading = true
-      setTimeout(() => {
-        this.listData = defaultList
-        this.listTotal = this.listData.length
-        this.listLoading = false
-      }, 1000)
+      this.$store.dispatch('QUESTION_ANSWER_LIST', {question_id: this.id})
+        .then(res => {
+          this.listData = res.data
+          this.listTotal = res.data.length
+        })
     },
     // 2.单页最大显示数据条数
     handleSizeChange(val) {
-      this.listQuery.page_size = val
+      this.listQuery.size = val
       this.getList()
     },
     // 3.处理分页
@@ -226,21 +210,7 @@ export default {
 </style>
 
 <style rel="stylesheet/scss" lang="scss" scoped>
-.box-card{
-  &+&{
-    margin-top: 28px;
-  }
-  .card-header{
-    position: relative;
-    .card-title{
-      font-size: 18px;
-      font-weight: bold;
-    }
-    .card-control{
-      position: absolute;
-      right: 0;
-      top: 0;
-    }
-  }
+.hover-link{
+  color: #f40;
 }
 </style>

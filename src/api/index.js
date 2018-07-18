@@ -7,11 +7,7 @@ export default {
   },
   // 登出
   logout: () => {
-    return request.post('/user/logout')
-  },
-  // 修改密码
-  editPass: (data) => {
-    return request.post('/user/change-pwd', data)
+    return request.post('/site/get-token')
   },
   // 用户信息
   getInfo: () => {
@@ -80,16 +76,31 @@ export default {
     return request.post('/question/question-list', data)
   },
   // 问卷设置创建
-  questionCreate: (data) => {
-    return request.post('question/question-create', data)
+  questionSettingCreate: (data) => {
+    return request.post('/question/question-create', data)
   },
   // 问卷设置编辑
-  questionEdit: (data) => {
-    return request.post('question/question-edit', data)
+  questionSettingEdit: (data) => {
+    return request.post('/question/question-edit', data)
   },
   // 问卷设置详情
-  questionDetail: (data) => {
+  questionSettingDetail: (data) => {
     return request.post('/question/question-one', data)
+  },
+  // 问卷问题导入
+  questionOriginImport: (data) => {
+    return request.post('/question/question-origin-import', data, {
+      headers: {
+        'Content-Type': 'application/json;charset=UTF-8'
+      },
+      transformRequest: [function (data) {
+        return JSON.stringify(data)
+      }]
+    })
+  },
+  // 问卷问题详情
+  questionOriginDetail: (data) => {
+    return request.post('/question/question-origin-one', data)
   },
   // 问卷提审
   questionSubmitVerify: (data) => {
@@ -114,37 +125,26 @@ export default {
 
   // 发放奖品列表
   awardList: (data) => {
-    return request.post('/paper/list', data)
+    return request.post('/paper/item-list', data)
   },
   // CP奖品列表
   itemCpList: (data) => {
     return request.post('/item/cp-item', data)
   },
-  // 问卷奖品列表
+  // 设置--奖品列表
   itemList: (data) => {
     return request.post('/item/list', data)
   },
-  // 奖品添加
-  itemCreate: (data) => {
-    return request.post('/item/create', data)
+
+  // 问卷答案分析
+  answerAnalyse: (data) => {
+    return request.post('/data/answer', data)
   },
-  // 奖品编辑
-  itemEdit: (data) => {
-    return request.post('/item/edit', data)
-  },
-  // 奖品详情
-  itemOne: (data) => {
-    return request.post('/item/one', data)
-  },
-  // 奖品删除
-  itemDel: (data) => {
-    return request.post('/item/del', data)
+  // 问卷答题记录
+  answerList: (data) => {
+    return request.post('/paper/list', data)
   },
 
-  // 导出
-  export: (data) => {
-    return request.get('/question/export-lists', { params: data })
-  },
   // 文件上传
   upload: (data) => {
     return request.post('/upload/upload-attachment', data)

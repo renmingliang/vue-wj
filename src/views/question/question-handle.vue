@@ -81,12 +81,12 @@
                 <el-button :disabled="isVerify" @click="handleCheck('QUESTION_VERIFY', 1)" type="info" size="mini">通过</el-button>
                 <el-button :disabled="isVerify" @click="handleCheck('QUESTION_VERIFY', 2)" type="info" size="mini">驳回</el-button>
                 <span class="hover-show">
-                  <router-link class="hover-link" :to="{name: 'question-preview', params: {id: 1}}" target="_blank">
+                  <router-link class="hover-link" :to="{name: 'preview-look', params: {id: this.id}}" target="_blank">
                     查看问卷
                   </router-link>
                 </span>
                 <span class="hover-show">
-                  <router-link class="hover-link" :to="{name: 'question-setting', params: {id: 1}}" target="_blank">
+                  <router-link class="hover-link" :to="{name: 'setting-look', params: {id: this.id}}" target="_blank">
                     查看设置
                   </router-link>
                 </span>

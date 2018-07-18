@@ -19,9 +19,9 @@
             <span>全屏切换</span>
           </screenfull>
         </div>
-        <div class="control-item edit-password" @click="dialogFormVisible = true">
+        <!-- <div class="control-item edit-password" @click="dialogFormVisible = true">
           <div>修改密码</div>
-        </div>
+        </div> -->
         <div class="control-item logout" @click="logout">
           <div>注销登录</div>
         </div>
@@ -121,6 +121,7 @@ export default {
     }
   },
   created() {
+    // 获取用户信息
     this.$store.dispatch('GetInfo')
   },
   methods: {
@@ -140,15 +141,7 @@ export default {
             origin_password: that.ruleForm.origin_password,
             new_password: that.ruleForm.new_password
           }
-          console.log(parmas)
-          setTimeout(() => {
-            this.dialogFormVisible = false
-            this.$message({
-              type: 'info',
-              message: 'Sorry！该接口处于调试中'
-            })
-          }, 500)
-          /* this.$store.dispatch('EditPass', parmas)
+          this.$store.dispatch('EditPass', parmas)
             .then(() => {
               this.dialogFormVisible = false
               this.$message({
@@ -160,9 +153,6 @@ export default {
                 }
               })
             })
-            .catch(err => {
-              console.log(err.msg)
-            }) */
         } else {
           return false
         }

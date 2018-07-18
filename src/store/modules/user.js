@@ -96,17 +96,14 @@ const user = {
     },
 
     // 登出
-    LogOut({ commit, state }) {
-      return new Promise((resolve, reject) => {
-        api.logout().then(() => {
-          commit('SET_TOKEN', '')
-          commit('SET_ROLES', [])
-          removeToken()
-          localData.clear()
-          resolve()
-        }).catch(error => {
-          reject(error)
-        })
+    LogOut({ commit }) {
+      return new Promise(resolve => {
+        commit('SET_TOKEN', '')
+        commit('SET_ROLES', [])
+        removeToken()
+        localData.clear()
+        location.href = api.logout
+        resolve()
       })
     },
 

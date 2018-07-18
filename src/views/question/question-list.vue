@@ -99,7 +99,7 @@
                 <el-col :span="14" class="text-center">
                   <el-col :span="8">
                     <div class="control-custom">
-                      <router-link :to="{ name: 'question-edit', params: {id: item.id} }">问卷编辑</router-link>
+                      <router-link :to="{ name: 'setting-edit', params: {id: item.id} }">问卷编辑</router-link>
                     </div>
                   </el-col>
                   <el-col :span="8">
@@ -174,10 +174,6 @@ export default {
     }
   },
   created() {
-    // 获取问卷状态
-    this.$store.dispatch('QUESTION_FETCH_STATUS')
-    // 获取问卷类型
-    this.$store.dispatch('QUESTION_FETCH_TYPE')
     // 默认执行一次查询
     this.getList()
   },

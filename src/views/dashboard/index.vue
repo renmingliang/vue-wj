@@ -14,6 +14,10 @@ export default {
   created() {
     // 获取游戏列表
     this.$store.dispatch('PROJECT_APP_LIST')
+    // 获取问卷状态
+    this.$store.dispatch('QUESTION_FETCH_STATUS')
+    // 获取问卷类型
+    this.$store.dispatch('QUESTION_FETCH_TYPE')
   },
   computed: {
   }

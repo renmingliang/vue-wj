@@ -55,10 +55,45 @@ export const asyncRouterMap = [
     meta: { title: '问卷管理', icon: 'table', code: 'manage' },
     children: [
       {
-        path: 'question-create',
-        name: 'question-create',
-        component: _import('question/question-setting'),
-        meta: { title: '问卷创建', code: 'question-create' }
+        path: 'setting-create',
+        name: 'setting-create',
+        component: _import('question/setting-create'),
+        meta: { title: '问卷创建' }
+      },
+      {
+        path: 'setting-edit/:id',
+        name: 'setting-edit',
+        hidden: true,
+        component: _import('question/setting-edit'),
+        meta: { title: '问卷设置' }
+      },
+      {
+        path: 'setting-look/:id',
+        name: 'setting-look',
+        hidden: true,
+        component: _import('question/setting-look'),
+        meta: { title: '查看设置' }
+      },
+      {
+        path: 'preview-create/:id',
+        name: 'preview-create',
+        hidden: true,
+        component: _import('question/preview-create'),
+        meta: { title: '问卷创建' }
+      },
+      {
+        path: 'preview-edit/:id',
+        name: 'preview-edit',
+        hidden: true,
+        component: _import('question/preview-edit'),
+        meta: { title: '问题编辑' }
+      },
+      {
+        path: 'preview-look/:id',
+        name: 'preview-look',
+        hidden: true,
+        component: _import('question/preview-look'),
+        meta: { title: '问卷预览' }
       },
       {
         path: 'question-list',
@@ -72,27 +107,6 @@ export const asyncRouterMap = [
         hidden: true,
         component: _import('question/question-handle'),
         meta: { title: '问卷操作', code: 'question-handle' }
-      },
-      {
-        path: 'question-setting/:id',
-        name: 'question-setting',
-        hidden: true,
-        component: _import('question/question-setting'),
-        meta: { title: '问卷设置' }
-      },
-      {
-        path: 'question-preview/:id',
-        name: 'question-preview',
-        hidden: true,
-        component: _import('question/question-preview'),
-        meta: { title: '问卷预览' }
-      },
-      {
-        path: 'question-edit/:id',
-        name: 'question-edit',
-        hidden: true,
-        component: _import('question/question-edit'),
-        meta: { title: '问卷编辑' }
       },
       {
         path: 'question-download/:id',

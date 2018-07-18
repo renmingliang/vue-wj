@@ -9,6 +9,9 @@
       <el-collapse v-model="activeNames">
         <el-collapse-item title="基本信息" :name="1">
           <div class="common-wrap">
+            <el-form-item label="问卷标题" prop="title">
+              <el-input :disabled="isLook" v-model="ruleForm.title" clearable></el-input>
+            </el-form-item>
             <el-form-item label="问卷类型" prop="type">
               <el-select :disabled="isLook" v-model="ruleForm.type" placeholder="请选择">
                 <el-option v-for="item in typeOptions" :label="item.label" :value="item.value" :key="item.value"></el-option>
@@ -39,15 +42,15 @@
               <el-input
                 type="textarea"
                 :disabled="isLook"
-                :autosize="{ minRows: 2 }"
-                placeholder="请输入内容"
+                :autosize="{ minRows: 3 }"
+                placeholder="请输入内容（不可超过200字）"
                 v-model="ruleForm.remark">
               </el-input>
             </el-form-item>
             <el-form-item label="设定时间">
-              <el-switch :disabled="isLook" active-value="1" inactive-value="0" v-model="ruleForm.open_status"></el-switch>
+              <el-switch :disabled="isLook" active-value="1" inactive-value="2" v-model="ruleForm.open_status"></el-switch>
             </el-form-item>
-            <template v-if="ruleForm.open_status>0">
+            <template v-if="ruleForm.open_status === '1'">
               <el-form-item
                 label="开始时间"
                 prop="start_date"
@@ -76,92 +79,103 @@
             </template>
           </div>
         </el-collapse-item>
-
-        <el-collapse-item v-if="!ruleForm.type" title="触发设置" :name="2">
+        <el-collapse-item title="跳转设置" :name="2">
           <div class="common-wrap">
-            <el-form-item label="等级限定" prop="need_level">
-              <el-input :disabled="isLook" v-model="ruleForm.need_level" clearable></el-input>
+            <el-form-item prop="submit_text" label-width="30px">
+              <el-input id="submitText" :disabled="isLook" type="textarea" v-model="ruleForm.submit_text"></el-input>
+              <!-- <div id="submitText"></div> -->
             </el-form-item>
           </div>
         </el-collapse-item>
 
-        <el-collapse-item v-if="!ruleForm.type" title="邮件设置" :name="3">
-          <div class="common-wrap">
-            <el-form-item label="邮件标题" prop="mail_title">
-              <el-input :disabled="isLook" v-model="ruleForm.mail_title" clearable></el-input>
-            </el-form-item>
-            <el-form-item label="邮件内容" prop="mail_content">
-              <el-input
-                type="textarea"
-                :disabled="isLook"
-                :autosize="{ minRows: 2 }"
-                placeholder="请输入内容"
-                v-model="ruleForm.mail_content">
-              </el-input>
-            </el-form-item>
-          </div>
-        </el-collapse-item>
-
-        <el-collapse-item v-if="!ruleForm.type" title="奖品设置" :name="4">
-          <div class="common-wrap">
-            <div v-if="!isLook" class="custom-btn">
-              <el-button @click.prevent="handleEdit" type="info">添加奖品</el-button>
+        <template v-if="ruleForm.type === '0'">
+          <el-collapse-item title="触发设置" :name="3">
+            <div class="common-wrap">
+              <el-form-item label="等级限定" prop="need_level">
+                <el-input :disabled="isLook" v-model="ruleForm.need_level" clearable></el-input>
+              </el-form-item>
             </div>
-            <el-table
-              highlight-current-row
-              border
-              stripe
-              :data="ruleForm.item">
-              <el-table-column
-                fixed
-                type="index"
-                label="序号"
-                align="center"
-                width="100">
-              </el-table-column>
-              <el-table-column
-                prop="item_name"
-                label="奖品名称"
-                align="center">
-              </el-table-column>
-              <el-table-column
-                label="奖品类型"
-                align="center">
-                  <template slot-scope="scope">{{ scope.row.item_type }}</template>
-              </el-table-column>
-              <el-table-column
-                prop="item_id"
-                label="奖品ID"
-                align="center">
-              </el-table-column>
-              <el-table-column
-                prop="item_num"
-                label="奖品数量"
-                align="center">
-              </el-table-column>
-              <el-table-column
-                label="操作"
-                align="center"
-                width="240">
-                <template slot-scope="scope">
-                  <el-button
-                  size="mini"
-                  icon="el-icon-edit"
-                  @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-                  <el-button
-                  size="mini"
-                  type="danger"
-                  icon="el-icon-delete"
-                  @click="handleDelete(scope.$index, scope.row)">删除</el-button>
-                </template>
-              </el-table-column>
-            </el-table>
-          </div>
-        </el-collapse-item>
+          </el-collapse-item>
+
+          <el-collapse-item title="邮件设置" :name="4">
+            <div class="common-wrap">
+              <el-form-item label="邮件标题" prop="mail_title">
+                <el-input :disabled="isLook" v-model="ruleForm.mail_title" clearable></el-input>
+              </el-form-item>
+              <el-form-item label="邮件内容" prop="mail_content">
+                <el-input
+                  type="textarea"
+                  :disabled="isLook"
+                  :autosize="{ minRows: 2 }"
+                  placeholder="请输入内容"
+                  v-model="ruleForm.mail_content">
+                </el-input>
+              </el-form-item>
+            </div>
+          </el-collapse-item>
+
+          <el-collapse-item title="奖品设置" :name="5">
+            <div class="common-wrap">
+              <div v-if="!isLook" class="custom-btn">
+                <el-button @click.prevent="handleEdit" type="info">添加奖品</el-button>
+              </div>
+              <el-table
+                highlight-current-row
+                border
+                stripe
+                :data="itemData">
+                <el-table-column
+                  fixed
+                  type="index"
+                  label="序号"
+                  align="center"
+                  width="100">
+                </el-table-column>
+                <el-table-column
+                  prop="item_name"
+                  label="奖品名称"
+                  align="center">
+                </el-table-column>
+                <el-table-column
+                  label="奖品类型"
+                  align="center">
+                    <template slot-scope="scope">{{ scope.row.item_type | formateTypeLabel }}</template>
+                </el-table-column>
+                <el-table-column
+                  prop="item_id"
+                  label="奖品ID"
+                  align="center">
+                </el-table-column>
+                <el-table-column
+                  prop="item_num"
+                  label="奖品数量"
+                  align="center">
+                </el-table-column>
+                <el-table-column
+                  v-if="!isLook"
+                  label="操作"
+                  align="center"
+                  width="240">
+                  <template slot-scope="scope">
+                    <el-button
+                    size="mini"
+                    icon="el-icon-edit"
+                    @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+                    <el-button
+                    size="mini"
+                    type="danger"
+                    icon="el-icon-delete"
+                    @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+          </el-collapse-item>
+        </template>
 
       </el-collapse>
 
-      <div class="custom-btn" align="center">
+      <div v-if="!isLook" class="custom-btn" align="center">
         <el-button @click="handleNext" type="primary">保存，下一步</el-button>
       </div>
 
@@ -184,9 +198,10 @@
           <el-select
             :disabled="isLook"
             v-model="awardForm.appid"
+            @change="changeParams($event, 0)"
             placeholder="请选择">
             <el-option
-              v-for="item in itemAppIds"
+              v-for="item in awardAppIds"
               :key="item.appid"
               :label="item.appname"
               :value="item.appid">
@@ -199,7 +214,7 @@
           <el-select
             :disabled="isLook"
             v-model="awardForm.item_type"
-            @change="fetchCpList"
+            @change="changeParams($event, 1)"
             placeholder="请选择">
             <el-option
               v-for="item in itemTypeOptions"
@@ -217,7 +232,7 @@
             v-model="awardForm.item_name"
             filterable
             placeholder="请选择，支持模糊搜索"
-            @change="handleItemId($event, item)">
+            @change="handleItemId">
             <el-option
               v-for="item in awardCpList"
               :key="item.id"
@@ -247,7 +262,7 @@ import { validateInput } from '@/utils/validate'
 
 const defaultForm = {
   id: 0,
-  title: '问卷标题',
+  title: '',
   type: '',
   project_id: '',
   app_ids: [],
@@ -258,16 +273,17 @@ const defaultForm = {
   need_level: '',
   mail_title: '',
   mail_content: '',
-  submit_text: '提交成功提示',
-  item: []
+  submit_text: '',
+  items: ''
 }
 
 const defaultAwardForm = {
+  index: '',
   appid: '',
   item_id: '',
   item_name: '',
-  item_type: '',
-  item_num: ''
+  item_num: '',
+  item_type: ''
 }
 
 export default {
@@ -293,6 +309,15 @@ export default {
         callback()
       }
     }
+    const validate50 = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('问卷标题不能为空'))
+      } else if (validateInput(value, 50)) {
+        callback(new Error('输入内容不得超过50个字符'))
+      } else {
+        callback()
+      }
+    }
     const validate200 = (rule, value, callback) => {
       if (validateInput(value, 200)) {
         callback(new Error('输入内容不得超过200个字符'))
@@ -301,11 +326,13 @@ export default {
       }
     }
     return {
-      activeNames: [1, 2, 3, 4],
+      activeNames: [1, 2, 3, 4, 5],
       postType: '',
+      ckeditorText: null,
       listLoading: false,
       dialogVisible: false,
-      itemAppIds: [],
+      itemData: [],
+      awardAppIds: [],
       awardFormTitle: '添加奖品',
       awardForm: deepClone(defaultAwardForm),
       awardRules: {
@@ -321,6 +348,9 @@ export default {
       },
       ruleForm: deepClone(defaultForm),
       rules: {
+        title: [
+          { required: true, validator: validate50, trigger: 'blur' }
+        ],
         type: [
           { required: true, message: '请选择问卷类型', trigger: 'change' }
         ],
@@ -373,10 +403,32 @@ export default {
       this.postType = 'QUESTION_CREATE'
     }
   },
+  mounted() {
+    const that = this
+    // 初始化创建富文本
+    this.ckeditorText = window.CKEDITOR.replace('submitText', {
+      removeButtons: 'Subscript,Superscript,Cut,Copy,SpellChecker,Unlink,Anchor,Maximize,Source,Strike,Outdent,Indent',
+      removePlugins: 'image'
+    })
+    // 实例化加载后赋值-并控制是否可编辑模式
+    this.ckeditorText.on('instanceReady', function (ev) {
+      if (that.isLook) {
+        that.ckeditorText.setReadOnly()
+      } else {
+        that.ckeditorText.setReadOnly(false)
+      }
+      const {submit_text} = that.ruleForm
+      that.ckeditorText.setData(submit_text)
+    })
+    // 退出后摧毁实例
+    this.$once('hook:beforeDestroy', function () {
+      this.ckeditorText.destroy()
+    })
+  },
   methods: {
     // 校验开始时间
     validateRightBegin(rule, value, callback) {
-      if (this.ruleForm.open_status > 0 && !value) {
+      if (this.ruleForm.open_status === '1' && !value) {
         callback(new Error('请选择问卷起始时间'))
       } else {
         callback()
@@ -384,7 +436,7 @@ export default {
     },
     // 校验结束时间
     validateRightEnd(rule, value, callback) {
-      if (this.ruleForm.open_status > 0 && !value) {
+      if (this.ruleForm.open_status === '1' && !value) {
         callback(new Error('请选择问卷结束时间'))
       } else {
         callback()
@@ -394,30 +446,64 @@ export default {
     fetchData() {
       this.$store.dispatch('QUESTION_FETCH_DETAIL', {question_id: this.id})
         .then(res => {
-          console.log(res.data)
+          const temp = res.data
+          const app_ids = temp.app_ids ? temp.app_ids.split() : []
+          this.ruleForm = Object.assign({}, temp, {question_id: this.id, app_ids})
+        })
+
+      this.$store.dispatch('ITEM_LIST', {question_id: this.id})
+        .then(res => {
+          this.itemData = res.data
         })
     },
-    // 1.根据选择游戏列表设置可供奖品选择游戏列表
+    // 1.添加奖品对话框打开时，处理其游戏选择项
     handleItemAppid() {
-      this.itemAppIds = this.appList.filter(item => {
-        return this.ruleForm.app_ids.includes(item.appid)
-      })
-      this.awardForm.appid = this.awardForm.appid || this.ruleForm.app_ids[0]
-    },
-    // 1.获取cp奖品列表
-    fetchCpList(type) {
       if (!this.ruleForm.app_ids.length) {
-        this.$message.info('请先选择 -> 基本设置 -> 游戏列表')
-        return false
+        // 使用nextTick是为了保证message提示，不被dialog对话框遮罩层级覆盖
+        this.$nextTick(() => {
+          this.$message({
+            message: '请先完成选择 -> 基本设置 -> 游戏列表',
+            type: 'info',
+            onClose: () => {
+              this.dialogVisible = false
+            }
+          })
+        })
+      } else {
+        this.awardAppIds = this.appList.filter(item => {
+          return this.ruleForm.app_ids.sort().includes(item.appid)
+        })
+        this.awardForm.appid = this.awardForm.appid || this.ruleForm.app_ids[0]
       }
-      const params = { type, appid: this.awardForm.appid }
+    },
+    // 2.转换获取CP奖品列表的参数
+    changeParams(type, isType) {
+      let params = {}
+      if (isType) {
+        params = { type, appid: this.awardForm.appid }
+      } else {
+        params = { type: this.awardForm.item_type, appid: type }
+      }
+      this.fetchCpList(params)
+    },
+    // 3.获取cp奖品列表
+    fetchCpList(params) {
       this.$store.dispatch('ITEM_CP_LIST', params)
+        .then(res => {
+          if (!res.data || !res.data.length) {
+            this.$message.info('该项游戏下的奖品数据为空，请选择其他游戏')
+          }
+        })
     },
-    // 2.获取该项奖品Id
-    handleItemId(val, item) {
-      this.awardForm.item_id = item.id
+    // 4.获取该项奖品Id
+    handleItemId(val) {
+      this.awardCpList.forEach(item => {
+        if (item.name === val) {
+          this.awardForm.item_id = item.id
+        }
+      })
     },
-    // 3.奖品新增或编辑
+    // 5.奖品新增或编辑
     handleEdit(index, row) {
       if (!row) {
         this.awardFormTitle = '添加奖品'
@@ -427,6 +513,8 @@ export default {
         this.ruleFormTitle = '编辑奖品'
         // 填充对应类别数据
         this.awardForm = {
+          index,
+          appid: row.appid,
           item_id: row.item_id,
           item_name: row.item_name,
           item_type: row.item_type,
@@ -435,56 +523,81 @@ export default {
       }
       this.dialogVisible = true
     },
-    // 4.奖品对话框
+    // 6.奖品对话框
     submitAward() {
       this.$refs.awardForm.validate((valid) => {
         if (valid) {
+          const { index } = this.awardForm
+          if (!Number.isInteger(index)) {
+            this.itemData.push(this.awardForm)
+          } else {
+            this.$set(this.itemData, index, this.awardForm)
+          }
+          this.changeAwardItem()
           this.dialogVisible = false
-          console.log(this.awardForm)
         } else {
           return false
         }
       })
     },
-    // 5.奖品删除
+    // 7.奖品删除
     handleDelete(index, row) {
       this.$confirm('此操作将会永久删除该奖品，是否确认删除？', '提示', {
         confirmButtonText: '删除',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        console.log(this.ruleForm)
+        // 执行删除
+        this.itemData.splice(index, 1)
+        this.changeAwardItem()
       }).catch(() => {
         this.$message.info('已取消删除')
       })
     },
-    // 6.进入下一步
+    // 8.处理后台需要奖品格式
+    changeAwardItem() {
+      // item_id:item_name:item_num:item_type
+      const params = this.itemData.map(item => {
+        return [item.item_id, item.item_name, item.item_num, item.item_type].join(':')
+      })
+      this.ruleForm.items = params.join(',')
+    },
+    // 9.保存，进入下一步
     handleNext() {
-      const that = this
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
           // 将app_ids数组改为字符串格式
           const app_ids = this.ruleForm.app_ids.join()
-          const params = Object.assign({}, this.ruleForm, {app_ids})
+          // 手动获取富文本框内容
+          const submit_text = this.ckeditorText.getData()
+          // 合并参数
+          const params = Object.assign({}, this.ruleForm, {app_ids, submit_text})
           this.$store.dispatch(this.postType, params)
-            .then(() => {
+            .then(res => {
+              const { question_id } = res.data
               this.$message({
                 type: 'success',
                 message: '操作成功!',
                 duration: 1 * 1000,
-                onClose: function() {
-                  // 更新获取数据列表
-                  console.log(that)
+                onClose: () => {
+                  // 进入问题创建页
+                  this.$router.push({ name: 'preview-create', params: { id: question_id } })
                 }
               })
-            })
-            .catch(err => {
-              console.log(err.msg)
             })
         } else {
           return false
         }
       })
+    }
+  },
+  filters: {
+    formateTypeLabel(val) {
+      if (val === '1') {
+        return '道具'
+      } else {
+        return '货币'
+      }
     }
   }
 }
