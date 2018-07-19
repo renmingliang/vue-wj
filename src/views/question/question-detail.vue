@@ -1,12 +1,12 @@
 <template>
-  <question-preview :is-edit="status" :id="id"></question-preview>
+  <question-preview :is-look="status" :is-detail="status" :id="id"></question-preview>
 </template>
 
 <script>
 import questionPreview from './components/question-preview'
 
 export default {
-  name: 'preview-edit',
+  name: 'question-detail',
   data() {
     return {
       status: true,

@@ -15,6 +15,12 @@ import '@/assets/icons' // icon
 
 import './permission'// user-roles permission
 
+// 页面按钮权限控制
+Vue.prototype.$_has = function (value) {
+  const permission = store.getters.addControl
+  return permission.some(item => item.route === value)
+}
+
 Vue.use(ElementUI)
 
 Vue.config.productionTip = false

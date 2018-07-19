@@ -287,7 +287,7 @@ const question = {
           })
       })
     },
-    // 详情
+    // 设置详情
     QUESTION_FETCH_DETAIL({ commit }, params) {
       return new Promise((resolve, reject) => {
         commit('LIST_LOADING', { loading: true })
@@ -432,6 +432,19 @@ const question = {
     QUESTION_ANSWER_LIST({ commit }, params) {
       return new Promise((resolve, reject) => {
         api.answerList(params)
+          .then(res => {
+            console.log(res)
+            resolve(res)
+          })
+          .catch(error => {
+            console.log(error)
+          })
+      })
+    },
+    // 问卷答题详情
+    QUESTION_ANSWER_DETAIL({ commit }, params) {
+      return new Promise((resolve, reject) => {
+        api.answerDetail(params)
           .then(res => {
             console.log(res)
             resolve(res)

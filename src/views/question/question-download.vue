@@ -52,7 +52,7 @@
       <div slot="header" class="card-header">
         <span class="card-title">答题记录</span>
         <div class="card-control">
-          <el-button @click="handleExport" type="text"><i class="el-icon-download"></i>导出数据</el-button>
+          <el-button @click="handleExport('paper/list')" type="text"><i class="el-icon-download"></i>导出数据</el-button>
         </div>
       </div>
       <div>
@@ -100,7 +100,7 @@
           </el-table-column>
           <el-table-column
             prop="ip"
-            label="地区"
+            label="IP"
             align="center">
           </el-table-column>
           <el-table-column
@@ -114,7 +114,7 @@
             <template slot-scope="scope">
               <span class="hover-show">
                 <router-link
-                  :to="{name:'preview-look', params: {id: scope.row.id}}"
+                  :to="{name:'question-detail', params: {id: scope.row.id}}"
                   class="hover-link"
                   target="_blank">
                   <i class="el-icon-view"></i>
@@ -141,7 +141,9 @@
 </template>
 
 <script>
+import { getToken } from '@/utils/auth'
 import { mapGetters } from 'vuex'
+import qs from 'qs'
 
 export default {
   name: 'question-download',
@@ -194,8 +196,11 @@ export default {
       this.getList()
     },
     // 4.导出数据
-    handleExport() {
-      console.log('导出数据')
+    handleExport(url) {
+      const token = getToken()
+      const params = Object.assign({}, this.listQuery, { token }, { export: 1 })
+      const query = qs.stringify(params)
+      window.open(`/${url}?` + query)
     }
   }
 }

@@ -14,7 +14,7 @@
       <div class="topbar-action">
         <el-button-group>
           <el-button @click="goBack" type="primary" icon="el-icon-arrow-left">返回</el-button>
-          <el-button @click="saveQuestions" type="primary">保存至草稿箱</el-button>
+          <el-button @click="saveQuestions('btn')" type="primary">保存至草稿箱</el-button>
           <router-link :to="{name: 'preview-look', params: {id: this.id}}" target="_blank">
             <el-button type="primary" icon="el-icon-view">预览</el-button>
           </router-link>
@@ -429,11 +429,11 @@ const defaultLogicType = [
 export default {
   name: 'question-preview',
   props: {
-    isEdit: {
+    isLook: {
       type: Boolean,
       default: false
     },
-    isLook: {
+    isDetail: {
       type: Boolean,
       default: false
     },
@@ -457,6 +457,7 @@ export default {
       editorClone: null,
       optionClone: null,
       editorCom: ['title'],
+      answers: {},
       questions: deepClone(defaultForm)
     }
   },
@@ -477,7 +478,11 @@ export default {
     if (!this.isLook) {
       this.initCKEditor()
     }
-    this.fetchData()
+    if (this.isDetail) {
+      this.fetchAnswerDetail()
+    } else {
+      this.fetchData()
+    }
   },
   methods: {
     // 0.返回
@@ -488,31 +493,45 @@ export default {
     fetchData() {
       this.$store.dispatch('QUESTION_ORIGIN_DETAIL', {question_id: this.id})
         .then(res => {
-          const tempJson = JSON.parse(res.data)
-          if (tempJson) {
-            this.questions = tempJson
+          const tempQ = JSON.parse(res.data)
+          if (tempQ) {
+            this.questions = tempQ
           } else {
             this.questions = deepClone(defaultForm)
           }
         })
     },
-    // 0.2.保存至草稿
-    saveQuestions() {
+    // 0.2.获取问题答题详情
+    fetchAnswerDetail() {
+      this.$store.dispatch('QUESTION_ANSWER_DETAIL', {paper_id: this.id})
+        .then(res => {
+          const { question, answer } = res.data
+          const tempQ = JSON.parse(question)
+          const tempA = JSON.parse(answer)
+          this.questions = tempQ
+          this.answers = tempA.answer
+          console.log(this.answers)
+        })
+    },
+    // 0.3.保存至草稿
+    saveQuestions(isBtn) {
       const params = Object.assign({}, this.questions, {question_id: this.id})
       console.log(params)
 
       this.$store.dispatch('QUESTION_ORIGIN_IMPORT', params)
         .then(res => {
-          this.$confirm('该问卷已成功保存至草稿箱，是否继续相关操作？', '提示', {
-            closeOnClickModal: false,
-            confirmButtonText: '前往操作',
-            cancelButtonText: '取消',
-            type: 'success'
-          }).then(() => {
-            this.$router.push({name: 'question-handle', params: {id: this.id}})
-          }).catch(() => {
-            this.$router.push({name: 'question-list'})
-          })
+          if (isBtn) {
+            this.$confirm('该问卷已成功保存至草稿箱，是否继续相关操作？', '提示', {
+              closeOnClickModal: false,
+              confirmButtonText: '前往操作',
+              cancelButtonText: '取消',
+              type: 'success'
+            }).then(() => {
+              this.$router.push({name: 'question-handle', params: {id: this.id}})
+            }).catch(() => {
+              console.log('取消')
+            })
+          }
         })
     },
     // 1.初始化公用富文本框
@@ -573,24 +592,32 @@ export default {
       if (oldNum < newNum) {
         for (let i = oldNum; i < newNum; i++) {
           this.editorData[i] = {}
-          Object.keys(this.editorData[i + 1]).forEach(key => {
-            const newKey = key.replace(/^\d+/, i)
-            this.editorData[i][newKey] = this.editorData[i + 1][key]
-          })
+          // 考虑未创建该题富文本框情况
+          if (this.editorData[i + 1]) {
+            Object.keys(this.editorData[i + 1]).forEach(key => {
+              const newKey = key.replace(/^\d+/, i)
+              this.editorData[i][newKey] = this.editorData[i + 1][key]
+            })
+          }
         }
       } else {
         for (let i = oldNum; i > newNum; i--) {
           this.editorData[i] = {}
-          Object.keys(this.editorData[i - 1]).forEach(key => {
-            const newKey = key.replace(/^\d+/, i)
-            this.editorData[i][newKey] = this.editorData[i - 1][key]
-          })
+          // 考虑未创建该题富文本框情况
+          if (this.editorData[i - 1]) {
+            Object.keys(this.editorData[i - 1]).forEach(key => {
+              const newKey = key.replace(/^\d+/, i)
+              this.editorData[i][newKey] = this.editorData[i - 1][key]
+            })
+          }
         }
       }
 
       // 更新后的位置
       this.editorData[newNum] = tempObj
       console.log(this.editorData)
+
+      this.saveQuestions()
     },
     // 5.创建题目
     createItem(item) {
@@ -672,6 +699,8 @@ export default {
         }
       })
       this.dialogVisible = false
+
+      this.saveQuestions()
     },
     // 11.取消逻辑编辑
     logicCancel() {
@@ -723,6 +752,8 @@ export default {
       // 更新复制后的题iID
       temp.iID = `q_${len}`
       this.questions.lists.push(temp)
+
+      this.saveQuestions()
       console.log('复制', temp)
     },
     // 16.删除
@@ -741,6 +772,7 @@ export default {
             message: '删除成功!',
             onClose: () => {
               this.updateDataEditor(tempInd)
+              this.saveQuestions()
             }
           })
         } else {
@@ -834,7 +866,6 @@ export default {
           this.editorData[num][tempName] = instace.getData()
         } else {
           this.editorData[tempName] = instace.getData()
-          // this.questions[tempName] = instace.getData()
         }
       })
       console.log(this.editorData)
@@ -948,6 +979,7 @@ export default {
       this.getDataEditor(num)
       this.setDataPreview(num)
       this.destoryEditor(num)
+      this.saveQuestions()
     },
     // 29.该题取消编辑
     cancelEditor(num) {

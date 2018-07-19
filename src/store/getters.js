@@ -6,6 +6,7 @@ const getters = {
   roles: state => state.user.roles,
   permission_routers: state => state.menu.routers,
   addRouters: state => state.menu.addRouters,
+  addControl: state => state.menu.addControl,
   defaultOptions: state => {
     return [ { label: '全部', value: '' } ]
   },

@@ -7,46 +7,127 @@ export const permissRouter = [
     name: '问卷管理',
     children: [
       {
-        code: 'question-create',
-        name: '问卷创建'
-      },
-      {
-        code: 'question-list',
-        name: '问卷列表',
-        permissions: [
+        code: 'manage',
+        name: '问卷管理',
+        children: [
           {
-            route: 'question/edit',
-            name: '编辑'
+            code: 'setting-create',
+            name: '问卷创建',
+            permissions: [
+              {
+                route: 'question/question-create',
+                name: '问卷创建'
+              }
+            ]
           },
           {
-            route: 'question/delete',
-            name: '删除'
+            code: 'question-list',
+            name: '问卷列表',
+            permissions: [
+              {
+                route: 'question/question-edit',
+                name: '问卷编辑'
+              },
+              {
+                route: 'data/answer',
+                name: '问卷分析'
+              },
+              {
+                route: 'paper/list',
+                name: '问卷下载'
+              },
+              {
+                route: 'question/question-copy',
+                name: '复制'
+              },
+              {
+                route: 'question/question-del',
+                name: '删除'
+              }
+            ]
+          },
+          {
+            code: 'question-handle',
+            name: '问卷操作',
+            permissions: [
+              {
+                route: 'question/question-submit-verify',
+                name: '提交'
+              },
+              {
+                route: 'question/question-verify',
+                name: '通过、驳回'
+              },
+              {
+                route: 'question/question-publish',
+                name: '发布'
+              },
+              {
+                route: 'question/question-over',
+                name: '回收'
+              }
+            ]
           }
         ]
       },
       {
-        code: 'question-setting',
-        name: '问卷设置'
+        code: 'award',
+        type: 'menu',
+        name: '奖励发放',
+        children: [
+          {
+            code: 'award-record',
+            name: '发放记录',
+            permissions: [
+              {
+                route: 'paper/item-list',
+                name: '下载'
+              }
+            ]
+          }
+        ]
       },
       {
-        code: 'question-preview',
-        name: '问卷预览'
-      },
-      {
-        code: 'question-edit',
-        name: '问卷编辑'
-      },
-      {
-        code: 'question-download',
-        name: '问卷下载'
-      },
-      {
-        code: 'question-analyse',
-        name: '问卷分析'
-      },
-      {
-        code: 'question-handle',
-        name: '问卷操作'
+        code: 'setting',
+        name: '系统设置',
+        children: [
+          {
+            code: 'project',
+            name: '项目设置',
+            permissions: [
+              {
+                route: 'project/create',
+                name: '添加项目'
+              },
+              {
+                route: 'project/edit',
+                name: '编辑项目'
+              },
+              {
+                route: 'project/del',
+                name: '删除项目'
+              }
+            ]
+          },
+          {
+            code: 'permission',
+            name: '权限设置',
+            permissions: [
+              {
+                route: 'user/add',
+                name: '新增'
+              },
+              {
+                route: 'user/update-permission',
+                name: '编辑'
+              },
+              {
+                route: 'user/change-status',
+                name: '删除'
+              }
+            ]
+          }
+        ]
       }
     ]
   },

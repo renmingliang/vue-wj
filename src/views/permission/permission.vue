@@ -48,7 +48,7 @@
           <el-col :span="8">
             <el-form-item label-width="50px">
               <el-button type="primary" @click="handleFilter">查询</el-button>
-              <el-button type="info" @click="handleEdit">新增账号</el-button>
+              <el-button v-if="$_has('user/add')" type="info" @click="handleEdit">新增账号</el-button>
             </el-form-item>
           </el-col>
         </el-row>
@@ -183,10 +183,12 @@
           width="240">
           <template slot-scope="scope">
             <el-button
+              v-if="$_has('user/update-permission')"
               size="mini"
               icon="el-icon-edit"
               @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
             <el-button
+              v-if="$_has('user/change-status')"
               size="mini"
               type="danger"
               icon="el-icon-delete"
@@ -245,6 +247,7 @@ export default {
   },
   computed: {
     ...mapGetters([
+      'name',
       'defaultOptions',
       'permissionConfigIds',
       'permissionConfigData',
@@ -348,7 +351,11 @@ export default {
                 message: '操作成功!',
                 duration: 1 * 1000,
                 onClose: function() {
-                  that.handleFilter()
+                  if (that.ruleForm.username === that.name) {
+                    location.reload()
+                  } else {
+                    that.handleFilter()
+                  }
                 }
               })
             })
@@ -372,7 +379,13 @@ export default {
               type: 'success',
               message: '删除成功!',
               onClose: function() {
-                that.handleFilter()
+                if (that.ruleForm.username === that.name) {
+                  that.$store.dispatch('FedLogOut').then(() => {
+                    location.reload()
+                  })
+                } else {
+                  that.handleFilter()
+                }
               }
             })
           })

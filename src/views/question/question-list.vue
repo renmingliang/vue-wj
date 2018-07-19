@@ -87,9 +87,15 @@
                 </el-col>
                 <el-col :span="2">
                   <p class="text-right">
-                    <el-tag
-                      type="success"
-                      disable-transitions>{{item.type_name}}</el-tag>
+                    <template v-if="item.type === '0'">
+                      <el-tag
+                        type="success"
+                        disable-transitions>{{item.type_name}}</el-tag>
+                    </template>
+                    <template v-else>
+                      <el-tag
+                        disable-transitions>{{item.type_name}}</el-tag>
+                    </template>
                   </p>
                 </el-col>
               </el-row>
@@ -98,17 +104,17 @@
               <el-row>
                 <el-col :span="14" class="text-center">
                   <el-col :span="8">
-                    <div class="control-custom">
+                    <div v-if="$_has('question/question-edit')" class="control-custom">
                       <router-link :to="{ name: 'setting-edit', params: {id: item.id} }">问卷编辑</router-link>
                     </div>
                   </el-col>
                   <el-col :span="8">
-                    <div class="control-custom">
+                    <div v-if="$_has('data/answer')" class="control-custom">
                       <router-link :to="{ name: 'question-analyse', params: {id: item.id} }">问卷分析</router-link>
                     </div>
                   </el-col>
                   <el-col :span="8">
-                    <div class="control-custom">
+                    <div v-if="$_has('paper/list')" class="control-custom">
                       <router-link :to="{ name: 'question-download', params: {id: item.id} }">问卷下载</router-link>
                     </div>
                   </el-col>
@@ -120,10 +126,10 @@
                     </router-link>
                   </div>
                   <div class="control-btn">
-                    <el-button @click="handleCopy(index, item)" size="mini" icon="el-icon-document" type="info" plain>复制</el-button>
+                    <el-button v-if="$_has('question/question-copy')" @click="handleCopy(index, item)" size="mini" icon="el-icon-document" type="info" plain>复制</el-button>
                   </div>
                   <div class="control-btn">
-                    <el-button @click="handleDelete(index, item)" size="mini" icon="el-icon-delete" type="danger" plain>删除</el-button>
+                    <el-button v-if="$_has('question/question-del')" @click="handleDelete(index, item)" size="mini" icon="el-icon-delete" type="danger" plain>删除</el-button>
                   </div>
                 </el-col>
                 <el-col :span="7">

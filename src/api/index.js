@@ -5,10 +5,8 @@ export default {
   login: (data) => {
     return request.post('/site/get-token', data)
   },
-  // 登出
-  logout: () => {
-    return request.post('/site/get-token')
-  },
+  // 登出--href直接跳转
+  logout: '/site/logout',
   // 用户信息
   getInfo: () => {
     return request.get('/user/info')
@@ -49,6 +47,10 @@ export default {
   // 项目列表
   projectList: (data) => {
     return request.post('/project/list', data)
+  },
+  // 项目详情
+  projectDetail: (data) => {
+    return request.post('/project/one', data)
   },
   // 项目添加
   projectCreate: (data) => {
@@ -122,11 +124,11 @@ export default {
   questionCopy: (data) => {
     return request.post('/question/question-copy', data)
   },
-
-  // 发放奖品列表
-  awardList: (data) => {
-    return request.post('/paper/item-list', data)
+  // 问卷删除
+  questionDel: (data) => {
+    return request.post('/question/question-del', data)
   },
+
   // CP奖品列表
   itemCpList: (data) => {
     return request.post('/item/cp-item', data)
@@ -140,9 +142,18 @@ export default {
   answerAnalyse: (data) => {
     return request.post('/data/answer', data)
   },
+
+  // 问卷发放奖品列表
+  awardList: (data) => {
+    return request.post('/paper/item-list', data)
+  },
   // 问卷答题记录
   answerList: (data) => {
     return request.post('/paper/list', data)
+  },
+  // 问卷答题详情
+  answerDetail: (data) => {
+    return request.post('/paper/one', data)
   },
 
   // 文件上传

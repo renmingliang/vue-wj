@@ -1,5 +1,5 @@
 <template>
-  <question-preview :is-edit="status" :id="id"></question-preview>
+  <question-preview :id="id"></question-preview>
 </template>
 
 <script>
@@ -9,7 +9,6 @@ export default {
   name: 'preview-create',
   data() {
     return {
-      status: false,
       id: this.$route.params.id
     }
   },

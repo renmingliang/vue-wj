@@ -4,12 +4,16 @@
 
 const path = require('path')
 
+const token = '6VyEBfxF9tswxI8JhSS6hCktrKl2nrGS_1531365352'
 const target = 'http://10.10.40.33:8606' // 开发 - zp
 // const target = 'http://10.10.40.33:8315' // 开发 - nhl
 // const target = 'http://115.159.189.146:8040/'  //沙箱
 
 module.exports = {
   dev: {
+
+    // token
+    token,
 
     // Paths
     assetsSubDirectory: 'static',

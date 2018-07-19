@@ -18,7 +18,11 @@
               </el-select>
             </el-form-item>
             <el-form-item label="所属项目" prop="project_id">
-              <el-select :disabled="isLook" v-model="ruleForm.project_id" placeholder="请选择">
+              <el-select
+                :disabled="isLook"
+                v-model="ruleForm.project_id"
+                placeholder="请选择"
+                @change="getProjectApp">
                 <el-option v-for="item in projectOptions" :label="item.label" :value="item.value" :key="item.value"></el-option>
               </el-select>
             </el-form-item>
@@ -31,7 +35,7 @@
                 v-model="ruleForm.app_ids"
                 placeholder="请选择">
                 <el-option
-                  v-for="item in appList"
+                  v-for="item in projectAppList"
                   :key="item.appid"
                   :label="item.appname"
                   :value="item.appid">
@@ -48,7 +52,7 @@
               </el-input>
             </el-form-item>
             <el-form-item label="设定时间">
-              <el-switch :disabled="isLook" active-value="1" inactive-value="2" v-model="ruleForm.open_status"></el-switch>
+              <el-switch :disabled="isLook" active-value="1" inactive-value="0" v-model="ruleForm.open_status"></el-switch>
             </el-form-item>
             <template v-if="ruleForm.open_status === '1'">
               <el-form-item
@@ -83,7 +87,6 @@
           <div class="common-wrap">
             <el-form-item prop="submit_text" label-width="30px">
               <el-input id="submitText" :disabled="isLook" type="textarea" v-model="ruleForm.submit_text"></el-input>
-              <!-- <div id="submitText"></div> -->
             </el-form-item>
           </div>
         </el-collapse-item>
@@ -175,7 +178,7 @@
 
       </el-collapse>
 
-      <div v-if="!isLook" class="custom-btn" align="center">
+      <div v-if="$_has('question/question-create') || $_has('question/question-edit') && !isLook" class="custom-btn" align="center">
         <el-button @click="handleNext" type="primary">保存，下一步</el-button>
       </div>
 
@@ -331,6 +334,7 @@ export default {
       ckeditorText: null,
       listLoading: false,
       dialogVisible: false,
+      projectAppList: [],
       itemData: [],
       awardAppIds: [],
       awardFormTitle: '添加奖品',
@@ -405,24 +409,29 @@ export default {
   },
   mounted() {
     const that = this
-    // 初始化创建富文本
-    this.ckeditorText = window.CKEDITOR.replace('submitText', {
-      removeButtons: 'Subscript,Superscript,Cut,Copy,SpellChecker,Unlink,Anchor,Maximize,Source,Strike,Outdent,Indent',
-      removePlugins: 'image'
-    })
-    // 实例化加载后赋值-并控制是否可编辑模式
-    this.ckeditorText.on('instanceReady', function (ev) {
-      if (that.isLook) {
-        that.ckeditorText.setReadOnly()
-      } else {
-        that.ckeditorText.setReadOnly(false)
-      }
-      const {submit_text} = that.ruleForm
-      that.ckeditorText.setData(submit_text)
-    })
-    // 退出后摧毁实例
-    this.$once('hook:beforeDestroy', function () {
-      this.ckeditorText.destroy()
+
+    this.$nextTick(() => {
+      // 初始化创建富文本
+      this.ckeditorText = window.CKEDITOR.replace('submitText', {
+        removeButtons: 'Subscript,Superscript,Cut,Copy,SpellChecker,Unlink,Anchor,Maximize,Source,Strike,Outdent,Indent',
+        removePlugins: 'image'
+      })
+      // 实例化加载后赋值-并控制是否可编辑模式
+      this.ckeditorText.on('instanceReady', function (ev) {
+        if (that.isLook) {
+          that.ckeditorText.setReadOnly()
+        } else {
+          that.ckeditorText.setReadOnly(false)
+        }
+        const {submit_text} = that.ruleForm
+        that.ckeditorText.setData(submit_text)
+        console.log(submit_text)
+      })
+
+      // 退出后摧毁实例
+      // this.$once('hook:beforeDestroy', function () {
+      //   this.ckeditorText.destroy()
+      // })
     })
   },
   methods: {
@@ -447,13 +456,28 @@ export default {
       this.$store.dispatch('QUESTION_FETCH_DETAIL', {question_id: this.id})
         .then(res => {
           const temp = res.data
-          const app_ids = temp.app_ids ? temp.app_ids.split() : []
+          const app_ids = temp.app_ids ? temp.app_ids.split(',') : []
+          const {project_id} = temp
+          this.getProjectApp(project_id)
           this.ruleForm = Object.assign({}, temp, {question_id: this.id, app_ids})
         })
 
       this.$store.dispatch('ITEM_LIST', {question_id: this.id})
         .then(res => {
           this.itemData = res.data
+        })
+    },
+    // 0.1根据项目获取对应游戏列表
+    getProjectApp(project_id) {
+      this.$store.dispatch('PROJECT_DETAIL', { project_id })
+        .then(res => {
+          const tempArr = res.data.app_ids.split(',')
+          this.projectAppList = this.appList.filter(item => {
+            return tempArr.includes(item.appid)
+          })
+          if (!this.projectAppList.length) {
+            this.ruleForm.app_ids = []
+          }
         })
     },
     // 1.添加奖品对话框打开时，处理其游戏选择项
@@ -470,7 +494,7 @@ export default {
           })
         })
       } else {
-        this.awardAppIds = this.appList.filter(item => {
+        this.awardAppIds = this.projectAppList.filter(item => {
           return this.ruleForm.app_ids.sort().includes(item.appid)
         })
         this.awardForm.appid = this.awardForm.appid || this.ruleForm.app_ids[0]
@@ -570,6 +594,10 @@ export default {
           const app_ids = this.ruleForm.app_ids.join()
           // 手动获取富文本框内容
           const submit_text = this.ckeditorText.getData()
+          if (!submit_text) {
+            this.$message.warning('跳转设置不能为空')
+            return false
+          }
           // 合并参数
           const params = Object.assign({}, this.ruleForm, {app_ids, submit_text})
           this.$store.dispatch(this.postType, params)

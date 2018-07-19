@@ -23,9 +23,7 @@ const permission = {
             temp.push({
               id: child.id,
               pid: child.pid,
-              permission_id: child.permissions.map(ppid => {
-                return ppid.id
-              })
+              permission_id: child.permission_ids.split(',')
             })
           })
         })

@@ -73,7 +73,7 @@
           <el-col :span="10">
             <el-form-item>
               <el-button @click="handleFilter" type="primary" icon="el-icon-search">搜索</el-button>
-              <el-button @click="handleExport" icon="el-icon-download">下载</el-button>
+              <el-button v-if="$_has('paper/item-list')" @click="handleExport('paper/item-list')" icon="el-icon-download">下载</el-button>
             </el-form-item>
           </el-col>
         </el-row>
@@ -151,8 +151,9 @@
 </template>
 
 <script>
-import qs from 'qs'
+import { getToken } from '@/utils/auth'
 import { mapGetters } from 'vuex'
+import qs from 'qs'
 
 export default {
   name: 'record',
@@ -221,9 +222,11 @@ export default {
       this.getList()
     },
     // 4.导出表格
-    handleExport(params) {
-      const query = qs.stringify(this.listQuery)
-      console.log(query)
+    handleExport(url) {
+      const token = getToken()
+      const params = Object.assign({}, this.listQuery, { token }, { export: 1 })
+      const query = qs.stringify(params)
+      window.open(`/${url}?` + query)
     },
     // 5.模糊搜索角色昵称
     querySearch(role_name, cb) {

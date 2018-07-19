@@ -1,5 +1,11 @@
 <template>
-  <div class="box-container">
+  <div
+    ref="pdf"
+    class="box-container"
+    v-loading="screenPDFLoding"
+    element-loading-text="拼命加载中"
+    element-loading-spinner="el-icon-loading"
+    element-loading-background="rgba(0, 0, 0, 0.8)">
     <el-card class="box-card" shadow="never">
       <div slot="header" class="card-header">
         <span class="card-title">问卷信息</span>
@@ -93,25 +99,15 @@
 
 <script>
 import { mapGetters } from 'vuex'
-
-// 引入 ECharts 主模块
-var echarts = require('echarts/lib/echarts')
-// 引入柱状图
-require('echarts/lib/chart/bar')
-// 饼图
-require('echarts/lib/chart/pie')
-// 引入其他组件
-require('echarts/lib/component/tooltip')
-require('echarts/lib/component/title')
-require('echarts/lib/component/legend')
-require('echarts/lib/component/toolbox')
-require('echarts/lib/component/legendScroll')
+import screenPDF from '@/utils/screenPDF'
+import chartConfig from '@/utils/chartConfig'
 
 export default {
   name: 'question-analyse',
   data() {
     return {
       id: this.$route.params.id,
+      screenPDFLoding: false,
       infoData: null,
       questionAnalyse: null,
       hiddenEchart: {}
@@ -142,18 +138,24 @@ export default {
           this.questionAnalyse = res.data
         })
     },
-    // 2.导出数据
+    // 2.下载报告
     handleExport() {
-      console.log('导出数据')
+      if (this.screenPDFLoding) return false
+      this.screenPDFLoding = true
+      const { title, type_name } = this.infoData[0]
+      screenPDF(title, type_name, this.$refs.pdf)
+        .then(() => {
+          this.screenPDFLoding = false
+        })
     },
     // 3.隐藏图表
     handleShow(index) {
       this.$set(this.hiddenEchart, index, true)
     },
     // 4.图表适配
-    resizeChart(chart) {
+    resizeChart(eleId) {
       function resize() {
-        chart.resize()
+        chartConfig.resizeChart(eleId)
       }
       window.addEventListener('resize', resize)
 
@@ -161,10 +163,11 @@ export default {
         window.removeEventListener('resize', resize)
       })
     },
-    // 5.echart图表绘制
+    // 5.饼图
     handlePie(item, index) {
       this.$set(this.hiddenEchart, index, false)
 
+      const name = item.title
       const legendData = item.list.map(v => {
         return v.option
       })
@@ -174,65 +177,22 @@ export default {
 
       this.$nextTick(() => {
         // 基于准备好的dom，初始化echarts实例
-        const tempId = `main-${index}`
-        const myChart = echarts.init(document.getElementById(tempId))
-        myChart.setOption({
-          title: {
-            text: '',
-            subtext: '',
-            x: 'center'
-          },
-          toolbox: {
-            feature: {
-              saveAsImage: {}
-            }
-          },
-          tooltip: {
-            trigger: 'item',
-            formatter: '{a} <br/>{b} : {c} ({d}%)'
-          },
-          legend: {
-            orient: 'vertical',
-            left: 'right',
-            top: 40,
-            type: 'scroll',
-            data: legendData
-          },
-          series: [
-            {
-              name: item.title,
-              type: 'pie',
-              radius: '55%',
-              center: ['50%', '60%'],
-              data: seriesData,
-              itemStyle: {
-                emphasis: {
-                  shadowBlur: 10,
-                  shadowOffsetX: 0,
-                  shadowColor: 'rgba(0, 0, 0, 0.5)'
-                }
-              }
-            }
-          ]
-        }, true)
-
-        this.resizeChart(myChart)
+        const eleId = `main-${index}`
+        const chartData = chartConfig.pie({
+          name,
+          legendData,
+          seriesData
+        })
+        chartConfig.render(eleId, chartData)
+        this.resizeChart(eleId)
       })
     },
+    // 6.Y轴
     handleYBar(item, index) {
       this.$set(this.hiddenEchart, index, false)
-      let axisData, series, legendData
+      let axisData, seriesData, legendData
 
-      const seriesConfig = {
-        name: item.title,
-        type: 'bar',
-        label: {
-          normal: {
-            position: 'right',
-            show: true
-          }
-        }
-      }
+      const name = item.title
       const isMatrix = item.type === '4' || item.type === '5'
 
       if (isMatrix) {
@@ -241,7 +201,7 @@ export default {
           return `${keys[i]}：${v}`
         })
 
-        const seriesData = item.list.map(v => {
+        seriesData = item.list.map(v => {
           const vals = Object.values(v).splice(1)
           return vals.map((k, i) => {
             // 注意这里需去除后台返回的百分数据
@@ -253,15 +213,10 @@ export default {
         axisData = item.list.map(v => {
           return v.sub_title
         })
-
-        series = seriesData.map((s, i) => {
-          return Object.assign({data: s}, seriesConfig, {name: legendData[i]})
-        })
       } else {
-        const seriesData = item.list.map(v => {
+        seriesData = item.list.map(v => {
           return { value: v.num, name: v.option }
         })
-        series = [Object.assign({data: seriesData}, seriesConfig)]
 
         axisData = item.list.map(v => {
           return v.option
@@ -270,54 +225,23 @@ export default {
 
       this.$nextTick(() => {
         // 基于准备好的dom，初始化echarts实例
-        const tempId = `main-${index}`
-        const myChart = echarts.init(document.getElementById(tempId))
-        myChart.setOption({
-          title: {
-            text: '',
-            subtext: ''
-          },
-          toolbox: {
-            feature: {
-              saveAsImage: {}
-            }
-          },
-          tooltip: {
-            trigger: 'axis',
-            axisPointer: {
-              type: 'shadow'
-            }
-          },
-          legend: {
-            data: legendData
-          },
-          xAxis: {
-            type: 'value',
-            boundaryGap: [0, 0.01]
-          },
-          yAxis: {
-            type: 'category',
-            data: axisData
-          },
-          series
-        }, true)
-        this.resizeChart(myChart)
+        const eleId = `main-${index}`
+        const chartData = chartConfig.yBar({
+          name,
+          legendData,
+          axisData,
+          seriesData
+        })
+        chartConfig.render(eleId, chartData)
+        this.resizeChart(eleId)
       })
     },
+    // 7.X轴
     handleXBar(item, index) {
       this.$set(this.hiddenEchart, index, false)
-      let axisData, series, legendData
+      let axisData, seriesData, legendData
 
-      const seriesConfig = {
-        name: item.title,
-        type: 'bar',
-        label: {
-          normal: {
-            position: 'top',
-            show: true
-          }
-        }
-      }
+      const name = item.title
       const isMatrix = item.type === '4' || item.type === '5'
 
       if (isMatrix) {
@@ -326,7 +250,7 @@ export default {
           return `${keys[i]}：${v}`
         })
 
-        const seriesData = item.list.map(v => {
+        seriesData = item.list.map(v => {
           const vals = Object.values(v).splice(1)
           return vals.map((k, i) => {
             // 注意这里需去除后台返回的百分数据
@@ -338,15 +262,10 @@ export default {
         axisData = item.list.map(v => {
           return v.sub_title
         })
-
-        series = seriesData.map((s, i) => {
-          return Object.assign({data: s}, seriesConfig, {name: legendData[i]})
-        })
       } else {
-        const seriesData = item.list.map(v => {
+        seriesData = item.list.map(v => {
           return { value: v.num, name: v.option }
         })
-        series = [Object.assign({data: seriesData}, seriesConfig)]
 
         axisData = item.list.map(v => {
           return v.option
@@ -355,37 +274,15 @@ export default {
 
       this.$nextTick(() => {
         // 基于准备好的dom，初始化echarts实例
-        const tempId = `main-${index}`
-        const myChart = echarts.init(document.getElementById(tempId))
-        myChart.setOption({
-          title: {
-            text: ''
-          },
-          tooltip: {
-            trigger: 'axis',
-            axisPointer: {
-              type: 'shadow'
-            }
-          },
-          toolbox: {
-            feature: {
-              saveAsImage: {}
-            }
-          },
-          legend: {
-            data: legendData
-          },
-          xAxis: {
-            type: 'category',
-            data: axisData
-          },
-          yAxis: {
-            type: 'value',
-            boundaryGap: [0, 0.01]
-          },
-          series
-        }, true)
-        this.resizeChart(myChart)
+        const eleId = `main-${index}`
+        const chartData = chartConfig.xBar({
+          name,
+          axisData,
+          legendData,
+          seriesData
+        })
+        chartConfig.render(eleId, chartData)
+        this.resizeChart(eleId)
       })
     }
   }

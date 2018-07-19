@@ -62,7 +62,12 @@
                 </span>
               </el-col>
               <el-col :span="10">
-                <el-button :disabled="isSubimitVerify" @click="handleCheck('QUESTION_SUBMIT_VERIFY')" type="info" size="mini">提交</el-button>
+                <el-button
+                  v-if="$_has('question/question-submit-verify')"
+                  :disabled="isSubimitVerify"
+                  @click="handleCheck('QUESTION_SUBMIT_VERIFY')"
+                  type="info"
+                  size="mini">提交</el-button>
               </el-col>
             </el-row>
           </li>
@@ -73,13 +78,24 @@
               </el-col>
               <el-col :span="10">
                 <span class="step-item-desc">
-                  <template v-if="isVerify">问卷审核通过，请发布问卷</template>
+                  <template v-if="isVerifyOk">问卷审核通过，请发布问卷</template>
+                  <template v-else-if="isVerify">问卷未审核通过，请重新编辑问卷</template>
                   <template v-else>问卷已创建完毕，是否通过审核？</template>
                 </span>
               </el-col>
               <el-col :span="10">
-                <el-button :disabled="isVerify" @click="handleCheck('QUESTION_VERIFY', 1)" type="info" size="mini">通过</el-button>
-                <el-button :disabled="isVerify" @click="handleCheck('QUESTION_VERIFY', 2)" type="info" size="mini">驳回</el-button>
+                <template v-if="$_has('question/question-verify')">
+                  <el-button
+                    :disabled="isVerify"
+                    @click="handleCheck('QUESTION_VERIFY', 1)"
+                    type="info"
+                    size="mini">通过</el-button>
+                  <el-button
+                    :disabled="isVerify"
+                    @click="handleCheck('QUESTION_VERIFY', 2)"
+                    type="info"
+                    size="mini">驳回</el-button>
+                </template>
                 <span class="hover-show">
                   <router-link class="hover-link" :to="{name: 'preview-look', params: {id: this.id}}" target="_blank">
                     查看问卷
@@ -105,7 +121,12 @@
                 </span>
               </el-col>
               <el-col :span="10">
-                <el-button :disabled="isPublish" @click="handleCheck('QUESTION_PUBLISH')" type="info" size="mini">发布</el-button>
+                <el-button
+                  v-if="$_has('question/question-publish')"
+                  :disabled="isPublish"
+                  @click="handleCheck('QUESTION_PUBLISH')"
+                  type="info"
+                  size="mini">发布</el-button>
               </el-col>
             </el-row>
           </li>
@@ -121,7 +142,12 @@
                 </span>
               </el-col>
               <el-col :span="10">
-                <el-button :disabled="isOver" @click="handleCheck('QUESTION_OVER')" type="info" size="mini">回收</el-button>
+                <el-button
+                  v-if="$_has('question/question-over')"
+                  :disabled="isOver"
+                  @click="handleCheck('QUESTION_OVER')"
+                  type="info"
+                  size="mini">回收</el-button>
               </el-col>
             </el-row>
           </li>
@@ -171,6 +197,9 @@ export default {
       return this.infoStatus > 0
     },
     isVerify() {
+      return this.infoStatus > 1
+    },
+    isVerifyOk() {
       return this.infoStatus > 2
     },
     isPublish() {
@@ -210,35 +239,7 @@ export default {
           })
         })
     },
-    // 1.提交审核
-    handleSubmitVerify() {
-      this.$store.dispatch('QUESTION_SUBMIT_VERIFY', {question_id: this.id})
-        .then(res => {
-          this.getInfo()
-        })
-    },
-    // 2.审核
-    handleVerify(verify) {
-      this.$store.dispatch('QUESTION_VERIFY', {question_id: this.id, verify})
-        .then(res => {
-          this.getInfo()
-        })
-    },
-    // 3.发布
-    handlePublish() {
-      this.$store.dispatch('QUESTION_PUBLISH', {question_id: this.id})
-        .then(res => {
-          this.getInfo()
-        })
-    },
-    // 4.回收
-    handleOver() {
-      this.$store.dispatch('QUESTION_OVER', {question_id: this.id})
-        .then(res => {
-          this.getInfo()
-        })
-    },
-    // 5.复制问卷链接
+    // 2.复制问卷链接
     copyLink() {
       const self = this // 指明this对象
       const clipboard = new ClipBoard('#copyBtn')

@@ -127,9 +127,7 @@ export default {
   methods: {
     // 0.登出
     logout() {
-      this.$store.dispatch('LogOut').then(() => {
-        location.reload() // 前端路由重载
-      })
+      this.$store.dispatch('LogOut')
     },
     // 1.提交修改密码表单
     submitForm() {

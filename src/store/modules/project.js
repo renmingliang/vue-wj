@@ -2,7 +2,7 @@ import api from '@/api'
 import { localData } from '@/utils'
 
 const KEY_APP = 'appList'
-const KEY_NAME = 'projectName'
+const KEY_NAME = 'p_name'
 
 const project = {
   state: {
@@ -63,6 +63,19 @@ const project = {
           })
       })
     },
+    // 项目详情
+    PROJECT_DETAIL({ commit }, params) {
+      return new Promise((resolve, reject) => {
+        api.projectDetail(params)
+          .then(res => {
+            console.log(res)
+            resolve(res)
+          })
+          .catch(error => {
+            console.log(error)
+          })
+      })
+    },
     // 编辑项目
     PROJECT_EDIT({ commit }, params) {
       return new Promise((resolve, reject) => {
@@ -97,8 +110,8 @@ const project = {
           .then(res => {
             console.log(res)
             commit('PROJECT_LOADING', { loading: false })
-            commit('PROJECT_LIST', { list: res.data })
             commit('PROJECT_NAME', { list: res.data })
+            commit('PROJECT_LIST', { list: res.data })
             resolve(res)
           })
           .catch(error => {

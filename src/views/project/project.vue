@@ -4,7 +4,10 @@
       <div slot="header" class="card-header">
         <span class="card-title">项目信息</span>
         <div class="card-control">
-          <el-button @click="handleEdit" type="text"><i class="el-icon-plus"></i>添加项目</el-button>
+          <el-button
+            v-if="$_has('project/create')"
+            @click="handleEdit"
+            type="text"><i class="el-icon-plus"></i>添加项目</el-button>
         </div>
       </div>
       <div>
@@ -53,10 +56,12 @@
             width="240">
             <template slot-scope="scope">
               <el-button
+              v-if="$_has('project/edit')"
               size="mini"
               icon="el-icon-edit"
               @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
               <el-button
+              v-if="$_has('project/del')"
               size="mini"
               type="danger"
               icon="el-icon-delete"
@@ -99,7 +104,6 @@
           prop="app_ids">
           <el-select
             multiple
-            collapse-tags
             v-model="ruleForm.app_ids"
             placeholder="请选择">
             <el-option
@@ -113,12 +117,19 @@
         <el-form-item
           label="备注"
           prop="remark">
-          <el-input v-model="ruleForm.remark" type="textarea" :autosize="{ minRows: 2 }"></el-input>
+          <el-input
+            v-model="ruleForm.remark"
+            type="textarea"
+            :autosize="{ minRows: 2 }"></el-input>
         </el-form-item>
         <el-form-item
           label="格式"
           prop="item_format">
-          <el-input v-model="ruleForm.item_format" type="textarea" :autosize="{ minRows: 2 }"></el-input>
+          <el-input
+            placeholder="例如这样：item_id:item_name:item_num"
+            v-model="ruleForm.item_format"
+            type="textarea"
+            :autosize="{ minRows: 2 }"></el-input>
         </el-form-item>
         <el-form-item
           label="GM发邮箱地址"

@@ -27,7 +27,7 @@ export const constantRouterMap = [
   { path: '/404', component: _import('errorPage/404'), hidden: true },
   { path: '/401', component: _import('errorPage/401'), hidden: true },
   {
-    path: '',
+    path: '/',
     component: Layout,
     redirect: '/dashboard',
     name: 'dashboard',
@@ -58,7 +58,7 @@ export const asyncRouterMap = [
         path: 'setting-create',
         name: 'setting-create',
         component: _import('question/setting-create'),
-        meta: { title: '问卷创建' }
+        meta: { title: '问卷创建', code: 'setting-create' }
       },
       {
         path: 'setting-edit/:id',
@@ -79,14 +79,7 @@ export const asyncRouterMap = [
         name: 'preview-create',
         hidden: true,
         component: _import('question/preview-create'),
-        meta: { title: '问卷创建' }
-      },
-      {
-        path: 'preview-edit/:id',
-        name: 'preview-edit',
-        hidden: true,
-        component: _import('question/preview-edit'),
-        meta: { title: '问题编辑' }
+        meta: { title: '问题创建' }
       },
       {
         path: 'preview-look/:id',
@@ -106,7 +99,7 @@ export const asyncRouterMap = [
         name: 'question-handle',
         hidden: true,
         component: _import('question/question-handle'),
-        meta: { title: '问卷操作', code: 'question-handle' }
+        meta: { title: '问卷操作' }
       },
       {
         path: 'question-download/:id',
@@ -121,6 +114,13 @@ export const asyncRouterMap = [
         hidden: true,
         component: _import('question/question-analyse'),
         meta: { title: '问卷分析' }
+      },
+      {
+        path: 'question-detail/:id',
+        name: 'question-detail',
+        hidden: true,
+        component: _import('question/question-detail'),
+        meta: { title: '答题详情' }
       }
     ]
   },
