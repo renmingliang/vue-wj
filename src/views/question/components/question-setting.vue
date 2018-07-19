@@ -407,33 +407,6 @@ export default {
       this.postType = 'QUESTION_CREATE'
     }
   },
-  mounted() {
-    const that = this
-
-    this.$nextTick(() => {
-      // 初始化创建富文本
-      this.ckeditorText = window.CKEDITOR.replace('submitText', {
-        removeButtons: 'Subscript,Superscript,Cut,Copy,SpellChecker,Unlink,Anchor,Maximize,Source,Strike,Outdent,Indent',
-        removePlugins: 'image'
-      })
-      // 实例化加载后赋值-并控制是否可编辑模式
-      this.ckeditorText.on('instanceReady', function (ev) {
-        if (that.isLook) {
-          that.ckeditorText.setReadOnly()
-        } else {
-          that.ckeditorText.setReadOnly(false)
-        }
-        const {submit_text} = that.ruleForm
-        that.ckeditorText.setData(submit_text)
-        console.log(submit_text)
-      })
-
-      // 退出后摧毁实例
-      // this.$once('hook:beforeDestroy', function () {
-      //   this.ckeditorText.destroy()
-      // })
-    })
-  },
   methods: {
     // 校验开始时间
     validateRightBegin(rule, value, callback) {
@@ -457,8 +430,9 @@ export default {
         .then(res => {
           const temp = res.data
           const app_ids = temp.app_ids ? temp.app_ids.split(',') : []
-          const {project_id} = temp
+          const {project_id, submit_text} = temp
           this.getProjectApp(project_id)
+          this.setSubmitText(submit_text)
           this.ruleForm = Object.assign({}, temp, {question_id: this.id, app_ids})
         })
 
@@ -467,7 +441,33 @@ export default {
           this.itemData = res.data
         })
     },
-    // 0.1根据项目获取对应游戏列表
+    // 0.1设置submit_text富文本框
+    setSubmitText(submit_text) {
+      const that = this
+
+      this.$nextTick(() => {
+        // 初始化创建富文本
+        this.ckeditorText = window.CKEDITOR.replace('submitText', {
+          removeButtons: 'Subscript,Superscript,Cut,Copy,SpellChecker,Unlink,Anchor,Maximize,Source,Strike,Outdent,Indent',
+          removePlugins: 'image'
+        })
+        // 实例化加载后赋值-并控制是否可编辑模式
+        this.ckeditorText.on('instanceReady', function (ev) {
+          if (that.isLook) {
+            that.ckeditorText.setReadOnly()
+          } else {
+            that.ckeditorText.setReadOnly(false)
+          }
+          that.ckeditorText.setData(submit_text)
+        })
+
+        // 退出后摧毁实例
+        this.$once('hook:beforeDestroy', function () {
+          this.ckeditorText.destroy()
+        })
+      })
+    },
+    // 0.2根据项目获取对应游戏列表
     getProjectApp(project_id) {
       this.$store.dispatch('PROJECT_DETAIL', { project_id })
         .then(res => {
