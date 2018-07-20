@@ -87,6 +87,7 @@
     <el-dialog
       center
       custom-class="custom-dialog-form"
+      :close-on-click-modal="false"
       :title="ruleFormTitle"
       :visible.sync="dialogFormVisible">
       <el-form
@@ -169,6 +170,15 @@ export default {
         callback()
       }
     }
+    const validateProjectName = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('项目名称不能为空'))
+      } else if (value.length > 10) {
+        callback(new Error('输入内容不得超过10个字符'))
+      } else {
+        callback()
+      }
+    }
     return {
       dialogFormVisible: false,
       postType: 'PROJECT_CREATE',
@@ -181,7 +191,7 @@ export default {
       },
       rules: {
         project_name: [
-          {required: true, message: '项目名称不能为空', trigger: 'blur'}
+          {required: true, trigger: 'blur', validator: validateProjectName}
         ],
         app_ids: [
           {required: true, message: '请选择游戏列表', trigger: 'blur'}
@@ -285,6 +295,7 @@ export default {
     handleDelete(index, row) {
       const that = this
       this.$confirm('此操作将会永久删除该项目，是否确认删除？', '提示', {
+        closeOnClickModal: false,
         confirmButtonText: '删除',
         cancelButtonText: '取消',
         type: 'warning'

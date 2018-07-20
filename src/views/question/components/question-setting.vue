@@ -85,7 +85,7 @@
         </el-collapse-item>
         <el-collapse-item title="跳转设置" :name="2">
           <div class="common-wrap">
-            <el-form-item prop="submit_text" label-width="30px">
+            <el-form-item class="is-required" label="提交成功文本" prop="submit_text" >
               <el-input id="submitText" :disabled="isLook" type="textarea" v-model="ruleForm.submit_text"></el-input>
             </el-form-item>
           </div>
@@ -189,6 +189,7 @@
       custom-class="custom-dialog-form"
       @open="handleItemAppid"
       :title="awardFormTitle"
+      :close-on-click-modal="false"
       :visible.sync="dialogVisible">
       <el-form
         ref="awardForm"
@@ -398,12 +399,16 @@ export default {
     }
   },
   created() {
+    // 更新获取项目名称
+    this.$store.dispatch('PROJECT_FETCH_LIST')
     if (this.isEdit || this.isLook) {
       this.fetchData()
       this.postType = 'QUESTION_EDIT'
     } else {
       // 利用深拷贝对象，重新清空赋值ruleForm表单，不然会指向同一个内存地址
       this.ruleForm = deepClone(defaultForm)
+      const {submit_text} = this.ruleForm
+      this.setSubmitText(submit_text)
       this.postType = 'QUESTION_CREATE'
     }
   },
@@ -438,7 +443,7 @@ export default {
 
       this.$store.dispatch('ITEM_LIST', {question_id: this.id})
         .then(res => {
-          this.itemData = res.data
+          this.itemData = res.data.list
         })
     },
     // 0.1设置submit_text富文本框
@@ -469,15 +474,13 @@ export default {
     },
     // 0.2根据项目获取对应游戏列表
     getProjectApp(project_id) {
+      this.ruleForm.app_ids = []
       this.$store.dispatch('PROJECT_DETAIL', { project_id })
         .then(res => {
           const tempArr = res.data.app_ids.split(',')
           this.projectAppList = this.appList.filter(item => {
             return tempArr.includes(item.appid)
           })
-          if (!this.projectAppList.length) {
-            this.ruleForm.app_ids = []
-          }
         })
     },
     // 1.添加奖品对话框打开时，处理其游戏选择项
@@ -567,6 +570,7 @@ export default {
     // 7.奖品删除
     handleDelete(index, row) {
       this.$confirm('此操作将会永久删除该奖品，是否确认删除？', '提示', {
+        closeOnClickModal: false,
         confirmButtonText: '删除',
         cancelButtonText: '取消',
         type: 'warning'
@@ -609,7 +613,7 @@ export default {
                 duration: 1 * 1000,
                 onClose: () => {
                   // 进入问题创建页
-                  this.$router.push({ name: 'preview-create', params: { id: question_id } })
+                  this.$router.push({ name: 'preview-import', params: { id: question_id } })
                 }
               })
             })

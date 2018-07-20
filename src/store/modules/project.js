@@ -17,7 +17,7 @@ const project = {
     appList: state => state.appList,
     projectLoading: state => state.projectLoading,
     projectList: state => state.projectList,
-    projectTotal: state => state.projectList.length,
+    projectTotal: state => state.projectTotal,
     projectFilter: state => state.projectFilter,
     projectName: state => state.projectName
   },
@@ -27,7 +27,8 @@ const project = {
       state.projectLoading = payload.loading
     },
     PROJECT_LIST: (state, payload) => {
-      state.projectList = payload.list
+      state.projectList = payload.list.list
+      state.projectTotal = +payload.list.count
     },
     APP_LIST: (state, payload) => {
       state.appList = payload.list
@@ -39,7 +40,7 @@ const project = {
       })
     },
     PROJECT_NAME: (state, payload) => {
-      state.projectName = payload.list.map(item => {
+      state.projectName = payload.list.list.map(item => {
         return {
           value: item.id,
           label: item.project_name

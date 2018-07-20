@@ -20,8 +20,8 @@ const award = {
       state.awardLoading = payload.loading
     },
     AWARD_LIST: (state, payload) => {
-      state.awardData = payload.list
-      state.awardTotal = payload.list.length
+      state.awardData = payload.list.list
+      state.awardTotal = +payload.list.count
     },
     AWARD_CP_LIST: (state, payload) => {
       state.awardCpList = payload.list

@@ -25,7 +25,7 @@
     <div class="editor-main" v-loading="questionLoading">
       <div class="survey-wrap">
         <div class="survey-main">
-          <div class="survey-com">
+          <!-- <div class="survey-com">
             <div class="inner text-center">
               <template v-if="!isLook">
                 <h1 id="title" class="com-content title-content" contenteditable="true">
@@ -37,7 +37,7 @@
               </template>
             </div>
           </div>
-          <!-- <div class="survey-com">
+          <div class="survey-com">
             <div class="inner">
               <template v-if="!isLook">
                 <div id="prefix" class="com-content" contenteditable="true">
@@ -120,7 +120,7 @@
                             <div class="options-control">
                               <span
                                 class="add-option"
-                                @click="createOption(index+1, list.iOptions)">新建选项</span>
+                                @click="createOption(index+1, list.iOptions, list.iType)">新建选项</span>
                               <span
                                 class="add-option"
                                 :class="addInput[index+1]?'not-allow':''"
@@ -173,7 +173,7 @@
                               <div class="options-control">
                                 <span
                                   class="add-option"
-                                  @click="createOption(index+1, list.iOptions)">新建选项</span>
+                                  @click="createOption(index+1, list.iOptions, list.iType)">新建选项</span>
                               </div>
                             </div>
                           </template>
@@ -203,11 +203,11 @@
                               :key="ind">
                               <input
                               class="options-type"
-                              :id="`${list.iID}_${ind+1}`"
-                              :name="list.iID"
+                              :id="`q${list.iID}_${ind+1}`"
+                              :name="`q${list.iID}`"
                               :type="list.iType"
                               :value="option.value">
-                              <label class="options-txt clearfix" :for="`${list.iID}_${ind+1}`">
+                              <label class="options-txt clearfix" :for="`q${list.iID}_${ind+1}`">
                                 <span class="options-value float-left">{{option.value}}</span>
                                 <div v-html="option.txt" class="float-left"></div>
                               </label>
@@ -254,8 +254,8 @@
                                       v-for="(option, ind) in list.iOptions"
                                       :key="ind">
                                         <input
-                                          :id="`${list.iID}_${index+1}_${ind+1}`"
-                                          :name="`${list.iID}_${index+1}`"
+                                          :id="`q${list.iID}_${index+1}_${ind+1}`"
+                                          :name="`q${list.iID}_${index+1}`"
                                           :type="list.iType.split('_')[1]"
                                           :value="option.value">
                                     </td>
@@ -271,7 +271,7 @@
                               :key="ind">
                               <textarea
                                 class="options-input"
-                                :name="list.iID"
+                                :name="`q${list.iID}`"
                                 :maxlength="list.iMaxlength"
                                 :placeholder="option.placeholder"
                                 rows="3"
@@ -301,9 +301,10 @@
     </div>
 
     <el-dialog
+      center
       title="填空设置"
       :visible.sync="dialogOtherVisible"
-      center
+      :close-on-click-modal="false"
       custom-class="custom-dialog-form">
       <el-form
         ref="otherForm"
@@ -322,7 +323,10 @@
       </div>
     </el-dialog>
 
-    <el-dialog title="逻辑设置" :visible.sync="dialogVisible">
+    <el-dialog
+      title="逻辑设置"
+      :close-on-click-modal="false"
+      :visible.sync="dialogVisible">
       <el-tabs
         v-model="logicType"
         :before-leave="beforeToggle">
@@ -417,7 +421,7 @@ import { deepClone } from '@/utils'
 import { mapGetters } from 'vuex'
 
 const defaultForm = {
-  title: '问卷标题',
+  // title: '问卷标题',
   lists: []
 }
 
@@ -456,7 +460,7 @@ export default {
       editorData: {},
       editorClone: null,
       optionClone: null,
-      editorCom: ['title'],
+      editorCom: [], // ['title']
       answers: {},
       questions: deepClone(defaultForm)
     }
@@ -475,9 +479,9 @@ export default {
     ])
   },
   created() {
-    if (!this.isLook) {
-      this.initCKEditor()
-    }
+    // if (!this.isLook) {
+    //   this.initCKEditor()
+    // }
     if (this.isDetail) {
       this.fetchAnswerDetail()
     } else {
@@ -487,7 +491,14 @@ export default {
   methods: {
     // 0.返回
     goBack() {
-      window.history.length > 1 ? this.$router.go(-1) : this.$router.push('/')
+      // 返回设置创建页 -- 需重定向进入设置编辑页
+      if (this.id) {
+        const params = { id: this.id }
+        this.$router.push({ name: 'setting-edit', params, replace: true })
+      } else {
+      // 其他页返回
+        window.history.length > 1 ? this.$router.go(-1) : this.$router.push('/')
+      }
     },
     // 0.1.获取问卷数据
     fetchData() {
@@ -519,7 +530,7 @@ export default {
       console.log(params)
 
       this.$store.dispatch('QUESTION_ORIGIN_IMPORT', params)
-        .then(res => {
+        .then(() => {
           if (isBtn) {
             this.$confirm('该问卷已成功保存至草稿箱，是否继续相关操作？', '提示', {
               closeOnClickModal: false,
@@ -560,9 +571,13 @@ export default {
         this.questions.lists.forEach((list, n) => {
           if (item === list.iID) {
             if (index < n) {
+              // 更新来源题ID
+              list.iFrom = this.questions.lists[index].iID
               // 添加大于该题选项位置的逻辑题
               temp.push(`第 ${n + 1} 题`)
             } else {
+              // 重置来源题ID
+              list.iFrom = ''
               // 删除小于该题选项位置的逻辑题
               arr.splice(i, 1)
               // 更新该题选项逻辑
@@ -694,7 +709,7 @@ export default {
       console.log(this.logicActive)
       Object.values(this.logicActive).forEach((item, index) => {
         const tempOption = this.logicData.iOptions[index]
-        if (tempOption.hasOwnProperty(this.logicType)) {
+        if (tempOption && tempOption.hasOwnProperty(this.logicType)) {
           tempOption[this.logicType] = item.sort().join()
         }
       })
@@ -709,6 +724,7 @@ export default {
     },
     // 12.重置该题选项对应逻辑题
     logicActiveReset() {
+      this.logicActive = {}
       this.logicData.iOptions.forEach((option, index) => {
         const tempData = option[this.logicType]
         const changeData = tempData ? tempData.split(',') : []
@@ -750,7 +766,8 @@ export default {
       const len = this.questions.lists.length + 1
       const temp = deepClone(item)
       // 更新复制后的题iID
-      temp.iID = `q_${len}`
+      temp.iID = `${len}`
+      // temp.iID = `q_${len}`
       this.questions.lists.push(temp)
 
       this.saveQuestions()
@@ -770,6 +787,7 @@ export default {
           this.$message({
             type: 'success',
             message: '删除成功!',
+            duration: 1 * 1000,
             onClose: () => {
               this.updateDataEditor(tempInd)
               this.saveQuestions()
@@ -829,7 +847,8 @@ export default {
       tempData.iRemark = this.editorData[num][`${num}_remark`]
       // 处理当前题号ID
       if (!tempData.iID) {
-        tempData.iID = `q_${num}`
+        tempData.iID = `${num}`
+        // tempData.iID = `q_${num}`
       }
       // 遍历处理选项
       tempData.iOptions.forEach((option, index) => {
@@ -902,13 +921,19 @@ export default {
     // 23.删除矩阵图标题
     delSubtitle(num, subtitles, ind) {
       console.log('删除问题')
+      this.getDataEditor(num)
       const len = subtitles.length
+      if (len <= 2) {
+        this.$message.error('问题不得少于2个')
+        return false
+      }
       const removeEditorId = `${num}_${len}_subtitle`
       subtitles.splice(ind, 1)
       subtitles.forEach((subtitle, index) => {
         if (ind <= index) {
-          this.editorData[num][`${num}_${index + 1}_subtitle`] = subtitle.txt
-          this.CKEDITOR.instances[`${num}_${index + 1}_subtitle`].setData(subtitle.txt, {
+          const tempTitle = this.editorData[num][`${num}_${index + 2}_subtitle`]
+          this.editorData[num][`${num}_${index + 1}_subtitle`] = tempTitle
+          this.CKEDITOR.instances[`${num}_${index + 1}_subtitle`].setData(tempTitle, {
             callback: function() {
               this.checkDirty()
             }
@@ -919,15 +944,22 @@ export default {
       this.CKEDITOR.instances[removeEditorId].destroy()
     },
     // 24.创建选项
-    createOption(num, options) {
+    createOption(num, options, tempType) {
       let addEditorId
       if (options) {
-        console.log('添加选项')
+        let temp = {'txt': '选项'}
         const len = options.length
         addEditorId = `${num}_${len + 1}`
-        options.push({'txt': '选项'})
+        switch (tempType) {
+        case 'radio':
+          temp = Object.assign({}, temp, {'display': '', 'goto': ''})
+          break
+        case 'checkbox':
+          temp = Object.assign({}, temp, {'display': ''})
+          break
+        }
+        options.push(temp)
       } else {
-        console.log('添加其他')
         if (this.addInput[num]) return false
         this.$set(this.addInput, num, true)
         addEditorId = `${num}_addInput`
@@ -938,16 +970,21 @@ export default {
     },
     // 25.删除选项
     delOption(num, options, ind) {
+      this.getDataEditor(num)
       let removeEditorId
       if (ind > -1) {
-        console.log('删除该选项')
         const len = options.length
+        if (len <= 2) {
+          this.$message.error('选项不得少于2个')
+          return false
+        }
         removeEditorId = `${num}_${len}`
         options.splice(ind, 1)
         options.forEach((option, index) => {
           if (ind <= index) {
-            this.editorData[num][`${num}_${index + 1}`] = option.txt
-            this.CKEDITOR.instances[`${num}_${index + 1}`].setData(option.txt, {
+            const tempTxt = this.editorData[num][`${num}_${index + 2}`]
+            this.editorData[num][`${num}_${index + 1}`] = tempTxt
+            this.CKEDITOR.instances[`${num}_${index + 1}`].setData(tempTxt, {
               callback: function() {
                 this.checkDirty()
               }
@@ -955,7 +992,6 @@ export default {
           }
         })
       } else {
-        console.log('删除其他项')
         removeEditorId = `${num}_addInput`
         this.$set(this.addInput, num, false)
       }

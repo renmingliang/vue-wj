@@ -4,10 +4,12 @@
 
 const path = require('path')
 
-const token = '6VyEBfxF9tswxI8JhSS6hCktrKl2nrGS_1531365352'
-const target = 'http://10.10.40.33:8606' // 开发 - zp
+// const token = '6VyEBfxF9tswxI8JhSS6hCktrKl2nrGS_1531365352'
+// const target = 'http://10.10.40.33:8606' // 开发 - zp
 // const target = 'http://10.10.40.33:8315' // 开发 - nhl
-// const target = 'http://115.159.189.146:8040/'  //沙箱
+
+const token = '5FzAMwIuadRMAAqQgVB0iRqld_LNVUR1_1531893330'
+const target = 'http://115.159.189.146:8040/'  //沙箱
 
 module.exports = {
   dev: {
@@ -31,7 +33,7 @@ module.exports = {
 
     // Various Dev Server settings
     host: 'localhost', // can be overwritten by process.env.HOST
-    port: 8080, // can be overwritten by process.env.PORT, if port is in use, a free one will be determined
+    port: 8040, // can be overwritten by process.env.PORT, if port is in use, a free one will be determined
     autoOpenBrowser: false,
     errorOverlay: true,
     notifyOnErrors: true,

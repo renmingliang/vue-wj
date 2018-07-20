@@ -191,7 +191,11 @@ export default {
       'awardTotal'
     ]),
     questionIdOptions() {
-      return this.defaultOptions.concat(this.questionId)
+      if (this.questionId) {
+        return this.defaultOptions.concat(this.questionId)
+      } else {
+        return this.defaultOptions
+      }
     },
     projectOptions() {
       return this.defaultOptions.concat(this.projectName)
@@ -200,6 +204,10 @@ export default {
   created() {
     // 默认执行一次查询
     this.getList()
+    // 获取问卷id
+    this.$store.dispatch('QUESTION_FETCH_LIST')
+    // 更新获取项目名称
+    this.$store.dispatch('PROJECT_FETCH_LIST')
   },
   methods: {
     // 0.获取数据

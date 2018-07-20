@@ -145,14 +145,14 @@ const question = {
       state.questionVerify = payload.loading
     },
     QUESTION_LIST: (state, payload) => {
-      state.questionList = payload.list
-      state.questionTotal = +payload.list.length
+      state.questionList = payload.list.list
+      state.questionTotal = +payload.list.count
     },
     QUESTION_ID: (state, payload) => {
-      state.questionId = payload.list.map(item => {
+      state.questionId = payload.list.list.map(item => {
         return {
           value: item.id,
-          label: item.id
+          label: item.title
         }
       })
       localData.set(KEY_ID, state.questionId)

@@ -104,9 +104,16 @@
               <el-row>
                 <el-col :span="14" class="text-center">
                   <el-col :span="8">
-                    <div v-if="$_has('question/question-edit')" class="control-custom">
-                      <router-link :to="{ name: 'setting-edit', params: {id: item.id} }">问卷编辑</router-link>
-                    </div>
+                    <template v-if="item.status === '5'">
+                      <div v-if="$_has('question/question-edit')" class="not-allow control-custom">
+                        <span>问卷编辑</span>
+                      </div>
+                    </template>
+                    <template v-else>
+                      <div v-if="$_has('question/question-edit')" class="control-custom">
+                        <router-link :to="{ name: 'setting-edit', params: {id: item.id} }">问卷编辑</router-link>
+                      </div>
+                    </template>
                   </el-col>
                   <el-col :span="8">
                     <div v-if="$_has('data/answer')" class="control-custom">
@@ -182,6 +189,8 @@ export default {
   created() {
     // 默认执行一次查询
     this.getList()
+    // 更新获取项目名称
+    this.$store.dispatch('PROJECT_FETCH_LIST')
   },
   computed: {
     ...mapGetters([
@@ -246,6 +255,7 @@ export default {
     handleDelete(index, item) {
       const that = this
       this.$confirm('此操作将永久删除该问卷, 是否继续?', '提示', {
+        closeOnClickModal: false,
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'

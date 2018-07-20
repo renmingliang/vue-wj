@@ -6,7 +6,7 @@
 import questionPreview from './components/question-preview'
 
 export default {
-  name: 'preview-create',
+  name: 'preview-import',
   data() {
     return {
       id: this.$route.params.id

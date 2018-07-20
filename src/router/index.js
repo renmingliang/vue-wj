@@ -75,10 +75,10 @@ export const asyncRouterMap = [
         meta: { title: '查看设置' }
       },
       {
-        path: 'preview-create/:id',
-        name: 'preview-create',
+        path: 'preview-import/:id',
+        name: 'preview-import',
         hidden: true,
-        component: _import('question/preview-create'),
+        component: _import('question/preview-import'),
         meta: { title: '问题创建' }
       },
       {

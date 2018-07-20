@@ -59,6 +59,7 @@
       custom-class="custom-dialog-permission"
       center
       @open="fetchInfo"
+      :close-on-click-modal="false"
       :title="ruleFormTitle"
       :fullscreen="true"
       :visible.sync="dialogFormVisible">
@@ -164,6 +165,13 @@
           align="center">
         </el-table-column>
         <el-table-column
+          label="账号状态"
+          align="center">
+          <template slot-scope="scope">
+            <span>{{scope.row.status | formateStatusLabel}}</span>
+          </template>
+        </el-table-column>
+        <el-table-column
           label="权限项目"
           align="center">
             <template slot-scope="scope">
@@ -265,8 +273,21 @@ export default {
       return this.defaultOptions.concat(this.projectName)
     }
   },
+  filters: {
+    formateStatusLabel(val) {
+      let label = ''
+      defaultUserStatus.forEach(item => {
+        if (item.value === val) {
+          label = item.label
+        }
+      })
+      return label
+    }
+  },
   created() {
     this.getList()
+    // 更新获取项目名称
+    this.$store.dispatch('PROJECT_FETCH_LIST')
   },
   methods: {
     // 0.获取sso用户与权限配置信息
@@ -369,6 +390,7 @@ export default {
       // console.log(index, row)
       const that = this
       this.$confirm('此操作将禁用该账号权限，是否继续?', '提示', {
+        closeOnClickModal: false,
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -378,6 +400,7 @@ export default {
             this.$message({
               type: 'success',
               message: '删除成功!',
+              duration: 1 * 1000,
               onClose: function() {
                 if (that.ruleForm.username === that.name) {
                   that.$store.dispatch('FedLogOut').then(() => {
