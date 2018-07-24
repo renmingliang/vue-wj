@@ -89,7 +89,7 @@
             align="center">
           </el-table-column>
           <el-table-column
-            prop="send_time"
+            prop="create_time"
             label="提交时间"
             align="center">
           </el-table-column>
@@ -114,7 +114,7 @@
             <template slot-scope="scope">
               <span class="hover-show">
                 <router-link
-                  :to="{name:'question-detail', params: {id: scope.row.id}}"
+                  :to="{name:'preview-answer', params: {id: scope.row.id}}"
                   class="hover-link"
                   target="_blank">
                   <i class="el-icon-view"></i>
@@ -181,8 +181,8 @@ export default {
     getList() {
       this.$store.dispatch('QUESTION_ANSWER_LIST', {question_id: this.id})
         .then(res => {
-          this.listData = res.data
-          this.listTotal = res.data.length
+          this.listData = res.data.list
+          this.listTotal = +res.data.count
         })
     },
     // 2.单页最大显示数据条数

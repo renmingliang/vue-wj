@@ -64,8 +64,10 @@
       </el-form>
     </div>
 
-    <div class="common-wrap search-result">
-      <div class="search-list" v-loading="questionLoading">
+    <div
+      class="common-wrap search-result"
+      v-loading="questionLoading">
+      <div class="search-list">
         <ul v-if="questionList.length">
           <li
             class="list-item"
@@ -104,14 +106,14 @@
               <el-row>
                 <el-col :span="14" class="text-center">
                   <el-col :span="8">
-                    <template v-if="item.status === '5'">
-                      <div v-if="$_has('question/question-edit')" class="not-allow control-custom">
-                        <span>问卷编辑</span>
+                    <template v-if="item.status === '0' || item.status === '2'">
+                      <div v-if="$_has('question/question-edit')" class="control-custom">
+                        <router-link :to="{ name: 'setting-edit', params: {id: item.id} }">问卷编辑</router-link>
                       </div>
                     </template>
                     <template v-else>
-                      <div v-if="$_has('question/question-edit')" class="control-custom">
-                        <router-link :to="{ name: 'setting-edit', params: {id: item.id} }">问卷编辑</router-link>
+                      <div v-if="$_has('question/question-edit')" class="not-allow control-custom">
+                        <span>问卷编辑</span>
                       </div>
                     </template>
                   </el-col>
@@ -281,7 +283,7 @@ export default {
       this.$store.dispatch('QUESTION_SEARCH_TITLE', { title })
         .then(res => {
           console.log(res.data)
-          const result = res.data.map(item => {
+          const result = res.data.list.map(item => {
             return {
               id: item.id,
               value: item.title
@@ -329,6 +331,9 @@ export default {
         &:hover{
           border-color: rgb(204, 204, 204);
           background-color: rgb(204, 204, 204);
+        }
+        &.not-allow{
+          border-color: #ccc !important;
         }
       }
     }

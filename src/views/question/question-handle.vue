@@ -97,7 +97,7 @@
                     size="mini">驳回</el-button>
                 </template>
                 <span class="hover-show">
-                  <router-link class="hover-link" :to="{name: 'preview-look', params: {id: this.id}}" target="_blank">
+                  <router-link class="hover-link" :to="{name: 'detail-look', params: {id: this.id}}" target="_blank">
                     查看问卷
                   </router-link>
                 </span>

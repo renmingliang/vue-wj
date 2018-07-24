@@ -26,33 +26,6 @@ const user = {
   },
 
   actions: {
-    // 登录
-    Login({ commit }, userInfo) {
-      const username = userInfo.username
-      const password = userInfo.password
-      return new Promise((resolve, reject) => {
-        api.login({username, password}).then(res => {
-          const token = res.data
-          setToken(token)
-          commit('SET_TOKEN', token)
-          resolve(res)
-        }).catch(error => {
-          reject(error)
-        })
-      })
-    },
-
-    // 修改密码
-    EditPass({ commit }, params) {
-      return new Promise((resolve, reject) => {
-        api.editPass(params).then(res => {
-          resolve(res)
-        }).catch(error => {
-          reject(error)
-        })
-      })
-    },
-
     // sso登录
     ssoLogin({ commit }, payload) {
       return new Promise((resolve, reject) => {

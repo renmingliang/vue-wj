@@ -7,7 +7,7 @@ import { getToken } from '@/utils/auth'
 
 NProgress.configure({ showSpinner: false })
 
-const whiteList = ['/404']// 白名单--不需要token页面
+const whiteList = ['/401']// 白名单--不需要token页面
 
 const str = location.search.substr(1)
 const token = getQueryString(str, 'token')
@@ -55,8 +55,8 @@ router.beforeEach((to, from, next) => {
       if (whiteList.indexOf(to.path) !== -1) {
         next()
       } else {
-        // 否则全部重定向到404页
-        next({ path: '/404' })
+        // 否则全部重定向到401页
+        next({ path: '/401' })
         NProgress.done()
       }
     }

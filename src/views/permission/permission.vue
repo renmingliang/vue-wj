@@ -196,11 +196,17 @@
               icon="el-icon-edit"
               @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
             <el-button
-              v-if="$_has('user/change-status')"
+              v-if="$_has('user/change-status') && scope.row.status === '1'"
+              size="mini"
+              type="info"
+              icon="el-icon-edit"
+              @click="handleDelete(scope.$index, scope.row)">解禁</el-button>
+            <el-button
+              v-if="$_has('user/change-status') && scope.row.status === '0'"
               size="mini"
               type="danger"
               icon="el-icon-delete"
-              @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+              @click="handleDelete(scope.$index, scope.row)">禁用</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -385,11 +391,13 @@ export default {
         }
       })
     },
-    // 7.删除用户权限
+    // 7.禁用用户权限
     handleDelete(index, row) {
       // console.log(index, row)
+      let delTips = '此操作将禁用该账号权限，是否继续?'
+      if (Number(row.status)) { delTips = '此操作将恢复该账号权限，是否继续?' }
       const that = this
-      this.$confirm('此操作将禁用该账号权限，是否继续?', '提示', {
+      this.$confirm(delTips, '提示', {
         closeOnClickModal: false,
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -399,7 +407,7 @@ export default {
           .then(res => {
             this.$message({
               type: 'success',
-              message: '删除成功!',
+              message: '操作成功!',
               duration: 1 * 1000,
               onClose: function() {
                 if (that.ruleForm.username === that.name) {
@@ -413,7 +421,7 @@ export default {
             })
           })
       }).catch(() => {
-        this.$message.info('已取消删除')
+        this.$message.info('已取消')
       })
     },
     // 8.前端 - 模糊搜索匹配增加员工权限

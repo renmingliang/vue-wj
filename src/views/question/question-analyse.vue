@@ -82,7 +82,7 @@
           </el-table>
           <template v-if="item.type !== '3'">
             <div class="analyse-item-handle text-right">
-              <template v-if="!(item.type === '4' || item.type === '5')">
+              <template v-if="!(item.type === '2' || item.type === '4' || item.type === '5')">
                 <el-button @click="handlePie(item, index)" size="medium">饼图</el-button>
               </template>
               <el-button @click="handleYBar(item, index)" size="medium">条形图</el-button>
@@ -136,6 +136,9 @@ export default {
       this.$store.dispatch('QUESTION_ANSWER_ANALYSE', {question_id: this.id})
         .then(res => {
           this.questionAnalyse = res.data
+          this.questionAnalyse.forEach((item, index) => {
+            this.$set(this.hiddenEchart, index, true)
+          })
         })
     },
     // 2.下载报告

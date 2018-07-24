@@ -23,7 +23,6 @@ Vue.use(Router)
   }
 **/
 export const constantRouterMap = [
-  { path: '/login', name: 'login', component: _import('login/index'), hidden: true },
   { path: '/404', component: _import('errorPage/404'), hidden: true },
   { path: '/401', component: _import('errorPage/401'), hidden: true },
   {
@@ -75,18 +74,18 @@ export const asyncRouterMap = [
         meta: { title: '查看设置' }
       },
       {
-        path: 'preview-import/:id',
-        name: 'preview-import',
+        path: 'detail-import/:id',
+        name: 'detail-import',
         hidden: true,
-        component: _import('question/preview-import'),
-        meta: { title: '问题创建' }
+        component: _import('question/detail-import'),
+        meta: { title: '问题导入' }
       },
       {
-        path: 'preview-look/:id',
-        name: 'preview-look',
+        path: 'detail-look/:id',
+        name: 'detail-look',
         hidden: true,
-        component: _import('question/preview-look'),
-        meta: { title: '问卷预览' }
+        component: _import('question/detail-look'),
+        meta: { title: '问题详情' }
       },
       {
         path: 'question-list',
@@ -114,15 +113,22 @@ export const asyncRouterMap = [
         hidden: true,
         component: _import('question/question-analyse'),
         meta: { title: '问卷分析' }
-      },
-      {
-        path: 'question-detail/:id',
-        name: 'question-detail',
-        hidden: true,
-        component: _import('question/question-detail'),
-        meta: { title: '答题详情' }
       }
     ]
+  },
+  {
+    path: '/preview-submit/:id',
+    name: 'preview-submit',
+    hidden: true,
+    component: _import('question/preview-submit'),
+    meta: { title: '问卷预览' }
+  },
+  {
+    path: '/preview-answer/:id',
+    name: 'preview-answer',
+    hidden: true,
+    component: _import('question/preview-answer'),
+    meta: { title: '答题详情' }
   },
   {
     path: '/award',

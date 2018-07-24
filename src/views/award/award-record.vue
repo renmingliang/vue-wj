@@ -9,7 +9,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="问卷 ID：">
+            <el-form-item label="问卷标题：">
               <el-select v-model="listQuery.question_id" placeholder="请选择">
                 <el-option
                   v-for="item in questionIdOptions"
@@ -122,7 +122,7 @@
         <el-table-column
           label="领取时间"
           align="center">
-            <template slot-scope="scope">{{ scope.row.send_time }}</template>
+            <template slot-scope="scope">{{ scope.row.create_time }}</template>
         </el-table-column>
         <el-table-column
           label="发放状态"
@@ -254,6 +254,8 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
-
+<style lang="scss">
+.el-select-dropdown.el-popper{
+  max-width: 180px;
+}
 </style>

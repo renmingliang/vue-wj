@@ -1,10 +1,6 @@
 import request from '@/utils/request'
 
 export default {
-  // 登录
-  login: (data) => {
-    return request.post('/site/get-token', data)
-  },
   // 登出--href直接跳转
   logout: '/site/logout',
   // 用户信息

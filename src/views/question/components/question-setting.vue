@@ -443,7 +443,7 @@ export default {
 
       this.$store.dispatch('ITEM_LIST', {question_id: this.id})
         .then(res => {
-          this.itemData = res.data.list
+          this.itemData = Array.isArray(res.data) ? res.data : []
         })
     },
     // 0.1设置submit_text富文本框
@@ -601,7 +601,11 @@ export default {
           if (!submit_text) {
             this.$message.warning('跳转设置不能为空')
             return false
+          } else if (submit_text.length > 1000) {
+            this.$message.warning('跳转设置中文本字符长度不得超过1000')
+            return false
           }
+
           // 合并参数
           const params = Object.assign({}, this.ruleForm, {app_ids, submit_text})
           this.$store.dispatch(this.postType, params)
@@ -613,7 +617,7 @@ export default {
                 duration: 1 * 1000,
                 onClose: () => {
                   // 进入问题创建页
-                  this.$router.push({ name: 'preview-import', params: { id: question_id } })
+                  this.$router.push({ name: 'detail-import', params: { id: question_id } })
                 }
               })
             })

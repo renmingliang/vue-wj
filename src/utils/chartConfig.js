@@ -51,6 +51,7 @@ export default {
         x: 'center'
       },
       toolbox: {
+        right: 20,
         feature: {
           saveAsImage: {}
         }
@@ -128,6 +129,7 @@ export default {
         subtext
       },
       toolbox: {
+        right: 20,
         feature: {
           saveAsImage: {}
         }
@@ -204,6 +206,7 @@ export default {
         }
       },
       toolbox: {
+        right: 20,
         feature: {
           saveAsImage: {}
         }

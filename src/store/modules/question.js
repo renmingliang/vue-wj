@@ -28,12 +28,11 @@ const question = {
       return [
         {
           iCode: 1,
-          iFrom: '',
           iType: 'radio',
           iTitle: '单选题',
           iRequired: true,
           iRuleOther: {
-            'maxlength': '',
+            'maxlength': '300',
             'required': false
           },
           iOptions: [
@@ -51,13 +50,12 @@ const question = {
         },
         {
           iCode: 2,
-          iFrom: '',
           iType: 'checkbox',
           iTitle: '多选题',
           iMaxlength: '',
           iRequired: true,
           iRuleOther: {
-            'maxlength': '',
+            'maxlength': '300',
             'required': false
           },
           iOptions: [
@@ -73,10 +71,9 @@ const question = {
         },
         {
           iCode: 3,
-          iFrom: '',
           iType: 'textarea',
           iTitle: '填空题',
-          iMaxlength: '',
+          iMaxlength: '300',
           iRequired: true,
           iOptions: [
             {
@@ -86,7 +83,6 @@ const question = {
         },
         {
           iCode: 4,
-          iFrom: '',
           iType: 'matrix_radio',
           iTitle: '矩阵单选题',
           iRequired: true,
@@ -109,7 +105,6 @@ const question = {
         },
         {
           iCode: 5,
-          iFrom: '',
           iType: 'matrix_checkbox',
           iTitle: '矩阵多选题',
           iRequired: true,
@@ -245,32 +240,26 @@ const question = {
     // 复制
     QUESTION_COPY({ commit }, params) {
       return new Promise((resolve, reject) => {
-        commit('LIST_LOADING', { loading: true })
         api.questionCopy(params)
           .then(res => {
             console.log(res)
-            commit('LIST_LOADING', { loading: false })
             resolve(res)
           })
           .catch(error => {
             console.log(error)
-            commit('LIST_LOADING', { loading: false })
           })
       })
     },
     // 删除
     QUESTION_DEL({ commit }, params) {
       return new Promise((resolve, reject) => {
-        commit('LIST_LOADING', { loading: true })
         api.questionDel(params)
           .then(res => {
             console.log(res)
-            commit('LIST_LOADING', { loading: false })
             resolve(res)
           })
           .catch(error => {
             console.log(error)
-            commit('LIST_LOADING', { loading: false })
           })
       })
     },
