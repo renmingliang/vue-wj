@@ -79,7 +79,6 @@ const award = {
         api.awardList(params)
           .then(res => {
             console.log(res)
-            commit('AWARD_LIST', { list: res.data })
             resolve(res)
           })
           .catch(error => {
