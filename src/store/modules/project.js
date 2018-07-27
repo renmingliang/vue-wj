@@ -10,6 +10,7 @@ const project = {
     projectName: localData.get(KEY_NAME),
     projectLoading: false,
     projectList: [],
+    projectTotal: null,
     projectFilter: null
   },
 

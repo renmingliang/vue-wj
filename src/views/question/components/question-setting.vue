@@ -452,10 +452,13 @@ export default {
 
       this.$nextTick(() => {
         // 初始化创建富文本
-        this.ckeditorText = window.CKEDITOR.replace('submitText', {
-          removeButtons: 'Subscript,Superscript,Cut,Copy,SpellChecker,Unlink,Anchor,Maximize,Source,Strike,Outdent,Indent',
-          removePlugins: 'image'
-        })
+        if (!this.ckeditorText) {
+          this.ckeditorText = window.CKEDITOR.replace('submitText', {
+            removeButtons: 'Subscript,Superscript,Cut,Copy,SpellChecker,Anchor,Maximize,Source,Strike,Outdent,Indent',
+            removePlugins: 'image'
+          })
+        }
+
         // 实例化加载后赋值-并控制是否可编辑模式
         this.ckeditorText.on('instanceReady', function (ev) {
           if (that.isLook) {
@@ -507,6 +510,7 @@ export default {
     changeParams(type, isType) {
       let params = {}
       if (isType) {
+        this.awardForm.item_name = ''
         params = { type, appid: this.awardForm.appid }
       } else {
         params = { type: this.awardForm.item_type, appid: type }

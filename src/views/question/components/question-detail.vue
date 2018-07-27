@@ -1,6 +1,6 @@
 <template>
   <div class="editor-container">
-    <sticky v-if="!isLook" className="editor-topbar" :stickyTop="100">
+    <sticky v-if="!isLook" className="editor-topbar" :stickyTop="78">
       <div class="topbar-question">
         <ul>
           <li
@@ -133,11 +133,11 @@
                             <div class="options-control">
                               <span
                                 class="add-option"
-                                @click="createOption(index+1, list.iOptions, list.iType)">新建选项</span>
+                                @click="createOption(index+1, list.iType, list.iOptions)">新建选项</span>
                               <span
                                 class="add-option"
                                 :class="addInput[index+1]?'not-allow':''"
-                                @click="createOption(index+1)">添加「其他」项</span>
+                                @click="createOption(index+1, list.iType)">添加「其他」项</span>
                             </div>
                           </template>
                           <template v-else-if="list.iType.split('_')[0] === 'matrix'">
@@ -186,7 +186,7 @@
                               <div class="options-control">
                                 <span
                                   class="add-option"
-                                  @click="createOption(index+1, list.iOptions, list.iType)">新建选项</span>
+                                  @click="createOption(index+1, list.iType, list.iOptions)">新建选项</span>
                               </div>
                             </div>
                           </template>
@@ -462,6 +462,7 @@ export default {
       logicActive: {},
       logicData: {},
       otherForm: {},
+      otherOption: {},
       addInput: {},
       prevEditorNum: 1,
       editorNum: {},
@@ -479,6 +480,9 @@ export default {
     },
     logicTypeOptions() {
       return defaultLogicType
+    },
+    ids () {
+      return this.questions.lists.map(list => list.iID)
     },
     ...mapGetters([
       'questionLoading',
@@ -519,6 +523,38 @@ export default {
     },
     // 0.2.保存至草稿
     saveQuestions(isBtn) {
+      // 0.2.1递归查询逻辑控制的子孙题ID
+      const that = this
+      function handleChildId(arr, childId) {
+        arr.forEach(item => {
+          const i = that.ids.indexOf(item)
+          if (i !== -1) {
+            that.questions.lists[i].iOptions.forEach(option => {
+              const ss = option[that.logicType] ? option[that.logicType].split(',') : []
+              if (ss.length) {
+                childId.push(ss.join())
+                handleChildId(ss, childId)
+              }
+            })
+          }
+        })
+        return childId.join()
+      }
+      // 0.2.2处理子孙题ID
+      this.questions.lists.forEach(list => {
+        list.iOptions.forEach(option => {
+          const childId = []
+          const logicArr = option[this.logicType] ? option[this.logicType].split(',') : []
+          if (option.hasOwnProperty(this.logicType)) {
+            if (logicArr.length) {
+              option.childId = handleChildId(logicArr, childId)
+            } else {
+              option.childId = ''
+            }
+          }
+        })
+      })
+
       const params = Object.assign({}, this.questions, {logicType: this.logicType}, {question_id: this.id})
       console.log(params)
 
@@ -561,10 +597,9 @@ export default {
       const arr = val.split(',')
       const temp = []
       const tempQ = this.questions.lists[index]
-      const ids = this.questions.lists.map(list => list.iID)
 
       arr.forEach((item, i) => {
-        if (ids.includes(item)) {
+        if (this.ids.includes(item)) {
           this.questions.lists.forEach((list, n) => {
             if (item === list.iID) {
               if (index < n) {
@@ -583,7 +618,7 @@ export default {
           tempQ.iOptions[ind][this.logicType] = arr.join()
         }
       })
-      return temp.join('、')
+      return temp.sort().join('、')
     },
     // 4.拖拽结束更新富文本框
     dragItem(evt) {
@@ -633,14 +668,18 @@ export default {
     },
     // 5.创建题目
     createItem(item) {
+      // if (this.getDataEditor(num, 'create') === -1) { return false }
       const num = this.questions.lists.length + 1
       this.prevEditorNum = num
       if (this.viewCreate || this.viewEdit) {
         return false
       }
       this.viewCreate = true
-      const temp = deepClone(item)
-      this.questions.lists.push(temp)
+      const tempData = deepClone(item)
+      // 处理当前题号ID
+      const newId = this.ids.length ? Math.max.apply(null, this.ids) + 1 : 1
+      tempData.iID = `${newId}`
+      this.questions.lists.push(tempData)
       this.enterItem(num)
     },
     // 6.编辑该题
@@ -659,11 +698,11 @@ export default {
 
       // 若含有其他项，先将其从选项中删除
       const isAddInput = tempData.iOptions.filter(option => option.input)
-      console.log(isAddInput)
       if (isAddInput.length) {
-        tempData.iOptions.pop()
+        this.otherOption = tempData.iOptions.pop()
+        console.log(this.otherOption)
         this.$set(this.addInput, num, true)
-        this.editorData[num][`${num}_addInput`] = isAddInput[0].txt
+        this.editorData[num][`${num}_addInput`] = this.otherOption.txt
       }
       this.setDataEditor(num)
     },
@@ -763,24 +802,28 @@ export default {
     },
     // 15.复制
     copyItem(item) {
-      const len = this.questions.lists.length + 1
+      const copyId = Math.max.apply(null, this.ids) + 1
       const temp = deepClone(item)
       // 更新复制后的题iID
-      temp.iID = `${len}`
-      // temp.iID = `q_${len}`
+      temp.iID = `${copyId}`
       this.questions.lists.push(temp)
-
+      this.$message.success('复制成功')
       this.saveQuestions()
-      console.log('复制', temp)
+      console.log('复制', temp, copyId)
     },
     // 16.删除
     delItem(item) {
-      const containsLogic = item.iOptions.filter(option => {
+      // 逻辑控制去向某题
+      const hrefLogic = item.iOptions.filter(option => {
         return option[this.logicType]
       })
-      console.log(item, containsLogic)
+      // 逻辑控制来源某题
+      const linkLogic = this.questions.lists.filter(list => {
+        const temp = list.iOptions.filter(option => option[this.logicType] && option[this.logicType].indexOf(item.iID) > -1)
+        return temp.length
+      })
       let delTips = '此操作将永久删除该题，是否继续?'
-      if (containsLogic.length) { delTips = '当前题涉及问卷逻辑，是否确认删除？' }
+      if (hrefLogic.length || linkLogic.length) { delTips = '当前题涉及问卷逻辑，是否确认删除？' }
       this.$confirm(delTips, '温馨提示', {
         closeOnClickModal: false,
         confirmButtonText: '确定',
@@ -806,7 +849,7 @@ export default {
       })
     },
     // 17.创建富文本
-    createEditor() {
+    createEditor(num) {
       const that = this
       // 先摧毁
       Object.values(this.CKEDITOR.instances).forEach(instace => {
@@ -817,6 +860,7 @@ export default {
         // 创建行内富文本
         that.CKEDITOR.inlineAll()
       )
+      this.CKEDITOR.instances[`${num}_title`].on('instanceReady', function (ev) { ev.editor.focus() })
     },
     // 18.该题富文本设值
     setDataEditor(num) {
@@ -824,7 +868,7 @@ export default {
         // 先存公用富文本值
         this.getDataEditor(num)
         // 再创建题目富文本
-        this.createEditor()
+        this.createEditor(num)
         // 后赋值题目值
         Object.values(this.CKEDITOR.instances).forEach(instace => {
           let tempData
@@ -850,11 +894,7 @@ export default {
       const isAddInput = this.editorData[num][`${num}_addInput`]
       tempData.iTitle = this.editorData[num][`${num}_title`]
       tempData.iRemark = this.editorData[num][`${num}_remark`]
-      // 处理当前题号ID
-      if (!tempData.iID) {
-        tempData.iID = `${num}`
-        // tempData.iID = `q_${num}`
-      }
+
       // 遍历处理选项
       tempData.iOptions.forEach((option, index) => {
         const temp = this.editorData[num][`${num}_${index + 1}`]
@@ -874,12 +914,14 @@ export default {
       }
       // 若含有其他项，则将其追加到选项中
       if (this.addInput[num] && isAddInput) {
-        tempData.iOptions.push({
+        const other = {
           'value': this.questionLetters[tempData.iOptions.length],
           'txt': isAddInput,
           'input': true,
           'placeholder': '请输入内容'
-        })
+        }
+        const obj = Object.assign({}, this.otherOption, other)
+        tempData.iOptions.push(obj)
       }
     },
     // 20.获取该题富文本值
@@ -887,7 +929,15 @@ export default {
       for (let [tempName, instance] of Object.entries(this.CKEDITOR.instances)) {
         const tempData = instance.getData()
         if (this.editorCom.indexOf(tempName) === -1) {
+          // 根据status来进行校验是否含未输入内容，并返回-1
           if (status && !tempData && tempName.indexOf('_remark') === -1) {
+            // const emptyEle = document.getElementById(tempName)
+            // if (!emptyEle.classList.contains('shake')) {
+            //   emptyEle.classList.add('shake')
+            //   setTimeout(() => {
+            //     emptyEle.classList.remove('shake')
+            //   }, 400)
+            // }
             const errorName = tempName.indexOf('_title') > -1 ? '标题' : '选项或内容'
             this.$message.warning(`第${num}题${errorName}不能为空，请输入其内容`)
             return -1
@@ -925,7 +975,7 @@ export default {
       const addEditorId = `${num}_${len + 1}_subtitle`
       subtitles.splice(len, 0, {'txt': ''})
       this.$nextTick(() => {
-        this.CKEDITOR.inline(addEditorId)
+        this.CKEDITOR.inline(addEditorId).on('instanceReady', function (ev) { ev.editor.focus() })
       })
     },
     // 23.删除矩阵图标题
@@ -954,28 +1004,30 @@ export default {
       this.CKEDITOR.instances[removeEditorId].destroy()
     },
     // 24.创建选项
-    createOption(num, options, tempType) {
+    createOption(num, tempType, options) {
+      // if (this.getDataEditor(num, 'create') === -1) return false
       let addEditorId
+      let temp = {'txt': ''}
+      switch (tempType) {
+      case 'radio':
+        temp = Object.assign({}, temp, {'display': '', 'goto': ''})
+        break
+      case 'checkbox':
+        temp = Object.assign({}, temp, {'display': ''})
+        break
+      }
       if (options) {
-        let temp = {'txt': ''}
         const len = options.length
         addEditorId = `${num}_${len + 1}`
-        switch (tempType) {
-        case 'radio':
-          temp = Object.assign({}, temp, {'display': '', 'goto': ''})
-          break
-        case 'checkbox':
-          temp = Object.assign({}, temp, {'display': ''})
-          break
-        }
         options.push(temp)
       } else {
         if (this.addInput[num]) return false
         this.$set(this.addInput, num, true)
         addEditorId = `${num}_addInput`
+        this.otherOption = temp
       }
       this.$nextTick(() => {
-        this.CKEDITOR.inline(addEditorId)
+        this.CKEDITOR.inline(addEditorId).on('instanceReady', function (ev) { ev.editor.focus() })
       })
     },
     // 25.删除选项
@@ -1004,6 +1056,7 @@ export default {
       } else {
         removeEditorId = `${num}_addInput`
         this.$set(this.addInput, num, false)
+        this.otherOption = {}
       }
       delete this.editorData[num][removeEditorId]
       this.CKEDITOR.instances[removeEditorId].destroy()
@@ -1022,12 +1075,11 @@ export default {
     // 28.该题编辑完成
     confirmEditor(num) {
       console.log('确定', num)
-      // 根据返回值来校验题目
-      if (this.getDataEditor(num, 'confirm') !== -1) {
-        this.setDataPreview(num)
-        this.destoryEditor(num)
-        this.saveQuestions()
-      }
+      // 根据返回值来校验是否含未输入内容
+      if (this.getDataEditor(num, 'confirm') === -1) return false
+      this.setDataPreview(num)
+      this.destoryEditor(num)
+      this.saveQuestions()
     },
     // 29.该题取消编辑
     cancelEditor(num) {

@@ -301,14 +301,25 @@ const question = {
             console.log(res)
             commit('LIST_LOADING', { loading: false })
             commit('QUESTION_LIST', { list: res.data })
-            if (!state.questionId || (state.questionId && state.questionId.length < res.data.length)) {
-              commit('QUESTION_ID', { list: res.data })
-            }
             resolve(res)
           })
           .catch(error => {
             console.log(error)
             commit('LIST_LOADING', { loading: false })
+          })
+      })
+    },
+    // 问卷标题
+    QUESTION_FETCH_TITLE({ commit, state }) {
+      return new Promise((resolve, reject) => {
+        api.questionList()
+          .then(res => {
+            console.log(res)
+            commit('QUESTION_ID', { list: res.data })
+            resolve(res)
+          })
+          .catch(error => {
+            console.log(error)
           })
       })
     },

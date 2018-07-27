@@ -101,10 +101,9 @@ export default {
       throw Error('Some type of parameter is not Array,Please fix it')
     }
 
-    const { text, name, subtext, legendData, axisData, seriesData } = option
+    const { text, subtext, legendData, axisData, seriesData } = option
 
     const seriesConfig = {
-      name,
       type: 'bar',
       label: {
         normal: {
@@ -172,10 +171,9 @@ export default {
       throw Error('Some type of parameter is not Array,Please fix it')
     }
 
-    const { text, name, subtext, legendData, axisData, seriesData } = option
+    const { text, subtext, legendData, axisData, seriesData } = option
 
     const seriesConfig = {
-      name,
       type: 'bar',
       label: {
         normal: {

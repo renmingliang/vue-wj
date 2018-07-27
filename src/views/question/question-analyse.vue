@@ -79,18 +79,32 @@
               :label="v"
               align="center">
             </el-table-column>
+            <!-- <el-table-column
+              v-if="item.total"
+              :prop="Array.isArray(item.total)?item.total[0]:item.total"
+              label="总计填写人数"
+              align="center"
+              ></el-table-column> -->
           </el-table>
-          <template v-if="item.type !== '3'">
-            <div class="analyse-item-handle text-right">
-              <template v-if="!(item.type === '2' || item.type === '4' || item.type === '5')">
-                <el-button @click="handlePie(item, index)" size="medium">饼图</el-button>
-              </template>
-              <el-button @click="handleYBar(item, index)" size="medium">条形图</el-button>
-              <el-button @click="handleXBar(item, index)" size="medium">柱状图</el-button>
-              <el-button @click="handleShow(index)" size="medium">隐藏图表</el-button>
-            </div>
-            <div v-if="!hiddenEchart[index]" :id="`main-${index}`" style="width: 100%;height: 500px;"></div>
-          </template>
+          <div class="analyse-info">
+            <el-alert
+              :title="`本题有效答题人数：${Array.isArray(item.total)?item.total[0]:item.total}`"
+              type="info"
+              show-icon
+              :closable="false">
+            </el-alert>
+            <template v-if="item.type !== '3'">
+              <div class="analyse-item-handle text-right">
+                <template v-if="!(item.type === '2' || item.type === '4' || item.type === '5')">
+                  <el-button @click="handlePie(item, index)" size="medium">饼图</el-button>
+                </template>
+                <el-button @click="handleYBar(item, index)" size="medium">条形图</el-button>
+                <el-button @click="handleXBar(item, index)" size="medium">柱状图</el-button>
+                <el-button @click="handleShow(index)" size="medium">隐藏图表</el-button>
+              </div>
+              <div v-if="!hiddenEchart[index]" :id="`main-${index}`" style="width: 100%;height: 500px;"></div>
+            </template>
+          </div>
         </div>
       </div>
     </el-card>
@@ -123,7 +137,7 @@ export default {
     this.getAnswer()
   },
   methods: {
-    // 0.获取问卷信息
+    // 0.1获取问卷信息
     getInfo() {
       this.$store.dispatch('QUESTION_FETCH_DETAIL', {question_id: this.id})
         .then(res => {
@@ -204,12 +218,11 @@ export default {
           return `${keys[i]}：${v}`
         })
 
-        seriesData = item.list.map(v => {
-          const vals = Object.values(v).splice(1)
-          return vals.map((k, i) => {
+        seriesData = Object.keys(item.label).splice(1).map((k, i) => {
+          return item.list.map(v => {
             // 注意这里需去除后台返回的百分数据
-            const sub = k.indexOf('(')
-            return { value: k.substr(0, sub), name: legendData[i] }
+            const sub = v[k].indexOf('(')
+            return { value: v[k].substr(0, sub), name: legendData[i] }
           })
         })
 
@@ -253,12 +266,11 @@ export default {
           return `${keys[i]}：${v}`
         })
 
-        seriesData = item.list.map(v => {
-          const vals = Object.values(v).splice(1)
-          return vals.map((k, i) => {
+        seriesData = Object.keys(item.label).splice(1).map((k, i) => {
+          return item.list.map(v => {
             // 注意这里需去除后台返回的百分数据
-            const sub = k.indexOf('(')
-            return { value: k.substr(0, sub), name: legendData[i] }
+            const sub = v[k].indexOf('(')
+            return { value: v[k].substr(0, sub), name: legendData[i] }
           })
         })
 
@@ -293,13 +305,18 @@ export default {
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scoped>
+.analyse-info{
+  .el-alert{
+    border-radius: 0;
+  }
+  margin-bottom: 20px;
+}
 .analyse-item-title{
   font-size: 16px;
   font-weight: 400;
   color: #333333;
-  margin-bottom: 10px;
 }
 .analyse-item-table, .analyse-item-handle{
-  margin-bottom: 20px;
+  margin-top: 20px;
 }
 </style>

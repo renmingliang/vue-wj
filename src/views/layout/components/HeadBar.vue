@@ -169,8 +169,8 @@ export default {
 .head-container{
   background-color: #27a9e3;
   color: #fff;
-  height: 100px;
-  line-height: 100px;
+  height: 78px;
+  line-height: 78px;
   position: absolute;
   left: 0;
   right: 0;

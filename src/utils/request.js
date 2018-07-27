@@ -70,8 +70,13 @@ service.interceptors.response.use(
   },
   error => {
     console.log('err' + error)// for debug
+    let msg = error.message
+    // 超时错误
+    if (error.code === 'ECONNABORTED' && msg.indexOf('timeout') !== -1) {
+      msg = '网络请求超时，请稍后重试'
+    }
     Message({
-      message: error.message,
+      message: msg,
       type: 'error',
       duration: 5 * 1000
     })

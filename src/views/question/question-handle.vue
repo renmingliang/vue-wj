@@ -53,30 +53,32 @@
           <li class="step-item">
             <el-row>
               <el-col :span="4">
-                <span class="step-item-title" :class="isSubimitVerify? 'active' : ''">提交问卷</span>
+                <span class="step-item-title" :class="isSubimitVerify? 'active' : ''">1</span>
               </el-col>
               <el-col :span="10">
+                <p class="step-item-tips">提交问卷</p>
                 <span class="step-item-desc">
                   <template v-if="isSubimitVerify">问卷已提交，请等待审核</template>
                   <template v-else>问卷已创建成功，是否提交审核？</template>
                 </span>
               </el-col>
               <el-col :span="10">
-                <el-button
+                <button
                   v-if="$_has('question/question-submit-verify')"
-                  :disabled="isSubimitVerify"
                   @click="handleCheck('QUESTION_SUBMIT_VERIFY')"
-                  type="info"
-                  size="mini">提交</el-button>
+                  :disabled="isSubimitVerify"
+                  class="custom-btn"
+                  :class="isSubimitVerify? 'is-over': ''">提交</button>
               </el-col>
             </el-row>
           </li>
           <li class="step-item">
             <el-row>
               <el-col :span="4">
-                <span class="step-item-title" :class="isVerify? 'active' : ''">审核问卷</span>
+                <span class="step-item-title" :class="isVerify? 'active' : ''">2</span>
               </el-col>
               <el-col :span="10">
+                <p class="step-item-tips">审核问卷</p>
                 <span class="step-item-desc">
                   <template v-if="isVerifyOk">问卷审核通过，请发布问卷</template>
                   <template v-else-if="isVerify">问卷未审核通过，请重新编辑问卷</template>
@@ -85,16 +87,16 @@
               </el-col>
               <el-col :span="10">
                 <template v-if="$_has('question/question-verify')">
-                  <el-button
-                    :disabled="isVerify"
+                  <button
                     @click="handleCheck('QUESTION_VERIFY', 1)"
-                    type="info"
-                    size="mini">通过</el-button>
-                  <el-button
                     :disabled="isVerify"
+                    class="custom-btn"
+                    :class="isVerify? 'is-over': ''">通过</button>
+                  <button
                     @click="handleCheck('QUESTION_VERIFY', 2)"
-                    type="info"
-                    size="mini">驳回</el-button>
+                    :disabled="isVerify"
+                    class="custom-btn"
+                    :class="isVerify? 'is-over': ''">驳回</button>
                 </template>
                 <span class="hover-show">
                   <router-link class="hover-link" :to="{name: 'detail-look', params: {id: this.id}}" target="_blank">
@@ -112,42 +114,44 @@
           <li class="step-item">
             <el-row>
               <el-col :span="4">
-                <span class="step-item-title" :class="isPublish? 'active' : ''">问卷发布</span>
+                <span class="step-item-title" :class="isPublish? 'active' : ''">3</span>
               </el-col>
               <el-col :span="10">
+                <p class="step-item-tips">问卷发布</p>
                 <span class="step-item-desc">
                   <template v-if="isPublish">问卷已发布，问卷链接已生成</template>
                   <template v-else>问卷已审核通过，是否发布？</template>
                 </span>
               </el-col>
               <el-col :span="10">
-                <el-button
+                <button
                   v-if="$_has('question/question-publish')"
-                  :disabled="isPublish"
                   @click="handleCheck('QUESTION_PUBLISH')"
-                  type="info"
-                  size="mini">发布</el-button>
+                  :disabled="isPublish"
+                  class="custom-btn"
+                  :class="isPublish? 'is-over':''">发布</button>
               </el-col>
             </el-row>
           </li>
           <li class="step-item">
             <el-row>
               <el-col :span="4">
-                <span class="step-item-title" :class="isOver? 'active' : ''">回收问卷</span>
+                <span class="step-item-title" :class="isOver? 'active' : ''">4</span>
               </el-col>
               <el-col :span="10">
+                <p class="step-item-tips">回收问卷</p>
                 <span class="step-item-desc">
                   <template v-if="isOver">问卷已成功回收</template>
                   <template v-else>问卷正在进行中，是否结束调研？</template>
                 </span>
               </el-col>
               <el-col :span="10">
-                <el-button
+                <button
                   v-if="$_has('question/question-over')"
-                  :disabled="isOver"
                   @click="handleCheck('QUESTION_OVER')"
-                  type="info"
-                  size="mini">回收</el-button>
+                  :disabled="isOver"
+                  class="custom-btn"
+                  :class="isOver? 'is-over':''">回收</button>
               </el-col>
             </el-row>
           </li>
@@ -259,13 +263,36 @@ export default {
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scoped>
+
 .custom-step{
   position: relative;
+  .custom-btn{
+    width: 98px;
+    display: inline-block;
+    text-align: center;
+    line-height: 34px;
+    background: #fff;
+    border: 1px solid #a5b5c5;
+    border-radius: 5px;
+    cursor: pointer;
+    &:hover{
+      background: #f8f8f8;
+    }
+    &+.custom-btn{
+      margin-left: 10px;
+    }
+    &.is-over{
+      cursor: not-allowed;
+      border-color: #d4d4d4;
+      background: #f8f8f8;
+      color: #ababaa;
+    }
+  }
   .step-line{
     position: absolute;
-    left: 40px;
+    left: 60px;
     top: 10px;
-    bottom: 10px;
+    bottom: 40px;
     width: 2px;
     background-color: #a7a7a7;
     z-index: 1;
@@ -279,11 +306,27 @@ export default {
       margin-top: 100px;
     }
     .step-item-title{
-      background: rgb(242, 242, 242);
-      padding: 5px 14px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: inline-block;
+      text-align: center;
+      background: #b5b5b5;
+      line-height: 40px;
+      color: #fff;
+      font-size: 20px;
+      margin-left: 40px;
       &.active{
-        background: #ff9900;
+        background: #70b6ff;
       }
+    }
+    .step-item-tips{
+      font-size: 16px;
+      color: #333;
+      font-weight: 700;
+    }
+    .step-item-desc{
+      color: #677387;
     }
   }
   .hover-show{

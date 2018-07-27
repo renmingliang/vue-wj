@@ -68,26 +68,28 @@
             align="center"
             width="100">
           </el-table-column>
-          <el-table-column
-            prop="role_id"
-            label="角色ID"
-            align="center">
-          </el-table-column>
-          <el-table-column
-            prop="role_name"
-            label="角色昵称"
-            align="center">
-          </el-table-column>
-          <el-table-column
-            prop="role_level"
-            label="角色等级"
-            align="center">
-          </el-table-column>
-          <el-table-column
-            prop="server_name"
-            label="服务器"
-            align="center">
-          </el-table-column>
+          <template v-if="questionType !== '1'">
+            <el-table-column
+              prop="role_id"
+              label="角色ID"
+              align="center">
+            </el-table-column>
+            <el-table-column
+              prop="role_name"
+              label="角色昵称"
+              align="center">
+            </el-table-column>
+            <el-table-column
+              prop="role_level"
+              label="角色等级"
+              align="center">
+            </el-table-column>
+            <el-table-column
+              prop="server_name"
+              label="服务器"
+              align="center">
+            </el-table-column>
+          </template>
           <el-table-column
             prop="create_time"
             label="提交时间"
@@ -150,6 +152,7 @@ export default {
   data() {
     return {
       id: this.$route.params.id,
+      questionType: '0',
       infoData: null,
       listData: null,
       listTotal: null,
@@ -181,8 +184,10 @@ export default {
     getList() {
       this.$store.dispatch('QUESTION_ANSWER_LIST', {question_id: this.id})
         .then(res => {
-          this.listData = res.data.list
-          this.listTotal = +res.data.count
+          const { list, count, type } = res.data
+          this.listData = list
+          this.listTotal = +count
+          this.questionType = type
         })
     },
     // 2.单页最大显示数据条数
@@ -198,7 +203,7 @@ export default {
     // 4.导出数据
     handleExport(url) {
       const token = getToken()
-      const params = Object.assign({}, this.listQuery, { token }, { export: 1 })
+      const params = Object.assign({}, this.listQuery, {type: this.questionType}, {question_id: this.id}, { token }, { export: 1 })
       const query = qs.stringify(params)
       window.open(`/${url}?` + query)
     }

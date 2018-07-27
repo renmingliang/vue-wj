@@ -43,7 +43,7 @@ export default {
   position: relative;
   .app-container{
     margin-left: 200px;
-    margin-top: 100px;
+    margin-top: 78px;
     .app-main{
       padding: 0;
       min-width: 900px;

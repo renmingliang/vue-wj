@@ -30,13 +30,13 @@ CKEDITOR.editorConfig = function( config ) {
 
 	// Remove some buttons provided by the standard plugins, which are
 	// not needed in the Standard(s) toolbar.
-	config.removeButtons = 'Subscript,Superscript,Cut,Copy,Paste,PasteText,PasteFromWord,Redo,Undo,SpellChecker,Unlink,Anchor,Maximize,Source,Strike,RemoveFormat,Outdent,Indent,Format,Image';
+	config.removeButtons = 'Subscript,Superscript,Cut,Copy,Paste,PasteText,PasteFromWord,Redo,Undo,SpellChecker,Anchor,Maximize,Source,Strike,RemoveFormat,Outdent,Indent,Format,Image';
 
 	// Simplify the dialog windows.
-	config.removeDialogTabs = 'image:advanced;link:advanced';
+	config.removeDialogTabs = 'image:advanced;link:advanced;link:upload';
 
 	// upload-url
-	config.filebrowserUploadUrl = '/';
+	// config.filebrowserUploadUrl = '/';
 	// 图像属性对话框里的图像信息下的预览文字
-	config.image_previewText = 'dialog中文件关于上传的预览展示文字'
+	// config.image_previewText = '凯撒文化-问卷调研平台'
 };

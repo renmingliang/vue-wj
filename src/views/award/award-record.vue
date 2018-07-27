@@ -21,12 +21,12 @@
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="领取起始时间：">
+            <el-form-item label="发放起始时间：">
               <el-date-picker
                 :picker-options="startDateOpt"
-                type="date"
+                type="datetime"
                 placeholder="请选择"
-                value-format="yyyy-MM-dd"
+                value-format="yyyy-MM-dd HH:mm:ss"
                 v-model="listQuery.start_time">
               </el-date-picker>
             </el-form-item>
@@ -57,12 +57,13 @@
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="领取结束时间：">
+            <el-form-item label="发放结束时间：">
               <el-date-picker
                 :picker-options="endDateOpt"
-                type="date"
+                type="datetime"
                 placeholder="请选择"
-                value-format="yyyy-MM-dd"
+                value-format="yyyy-MM-dd HH:mm:ss"
+                default-time="23:59:59"
                 v-model="listQuery.end_time">
               </el-date-picker>
             </el-form-item>
@@ -70,7 +71,19 @@
         </el-row>
 
         <el-row :gutter="30">
-          <el-col :span="10">
+          <el-col :span="8">
+            <el-form-item label="发放状态：">
+            <el-select v-model="listQuery.send_status" placeholder="请选择">
+              <el-option
+                v-for="item in sendStatusOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          </el-col>
+          <el-col :span="12">
             <el-form-item>
               <el-button @click="handleFilter" type="primary" icon="el-icon-search">搜索</el-button>
               <el-button v-if="$_has('paper/item-list')" @click="handleExport('paper/item-list')" icon="el-icon-download">下载</el-button>
@@ -95,8 +108,13 @@
           width="100">
         </el-table-column>
         <el-table-column
-          prop="question_id"
-          label="问卷ID"
+          prop="title"
+          label="问卷标题"
+          align="center">
+        </el-table-column>
+        <el-table-column
+          prop="project_name"
+          label="所属项目"
           align="center">
         </el-table-column>
         <el-table-column
@@ -120,9 +138,9 @@
           align="center">
         </el-table-column>
         <el-table-column
-          label="领取时间"
+          label="发放时间"
           align="center">
-            <template slot-scope="scope">{{ scope.row.create_time }}</template>
+            <template slot-scope="scope">{{ scope.row.send_time }}</template>
         </el-table-column>
         <el-table-column
           label="发放状态"
@@ -155,6 +173,11 @@ import { getToken } from '@/utils/auth'
 import { mapGetters } from 'vuex'
 import qs from 'qs'
 
+const defaultStatusOptions = [
+  { label: '成功', value: '1' },
+  { label: '失败', value: '2' }
+]
+
 export default {
   name: 'record',
   data() {
@@ -167,7 +190,8 @@ export default {
         question_id: '',
         project_id: '',
         start_time: '',
-        end_time: ''
+        end_time: '',
+        send_status: ''
       },
       startDateOpt: {
         disabledDate: (time) => {
@@ -190,6 +214,9 @@ export default {
       'awardData',
       'awardTotal'
     ]),
+    sendStatusOptions() {
+      return this.defaultOptions.concat(defaultStatusOptions)
+    },
     questionIdOptions() {
       if (this.questionId) {
         return this.defaultOptions.concat(this.questionId)
@@ -198,14 +225,18 @@ export default {
       }
     },
     projectOptions() {
-      return this.defaultOptions.concat(this.projectName)
+      if (this.projectName) {
+        return this.defaultOptions.concat(this.projectName)
+      } else {
+        return this.defaultOptions
+      }
     }
   },
   created() {
     // 默认执行一次查询
     this.getList()
     // 获取问卷id
-    this.$store.dispatch('QUESTION_FETCH_LIST')
+    this.$store.dispatch('QUESTION_FETCH_TITLE')
     // 更新获取项目名称
     this.$store.dispatch('PROJECT_FETCH_LIST')
   },
@@ -240,11 +271,15 @@ export default {
     querySearch(role_name, cb) {
       this.$store.dispatch('AWARD_SEARCH_ROLE', { role_name })
         .then(res => {
-          const result = res.data.map(item => {
-            return {
-              id: item.id,
-              value: item.role_name
-            }
+          const result = []
+          res.data.list.forEach(item => {
+            const obj = { id: item.id, value: item.role_name }
+            !result.length && result.push(obj)
+            result.forEach(ss => {
+              if (ss.value.indexOf(item.role_name) === -1) {
+                result.push(obj)
+              }
+            })
           })
           // 调用callback返回建议列表的数据
           cb(result)

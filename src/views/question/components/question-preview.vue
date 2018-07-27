@@ -44,7 +44,7 @@
                                 </label>
                                 <textarea
                                   class="options-input"
-                                  v-if="(option.input && addInput[num+1]) || tempInput[num+1]"
+                                  v-if="option.input && (addInput[num+1] || tempInput[num+1])"
                                   v-model="tempInput[num+1]"
                                   :disabled="isAnswer"
                                   :name="`q${num+1}_addInput`"
@@ -118,9 +118,6 @@
                 <el-button type="primary" @click="submitAnswer">提交</el-button>
               </div>
             </template>
-            <template v-else>
-              <div class="text-center">该问卷问题为空</div>
-            </template>
           </div>
       </div>
     </div>
@@ -148,7 +145,9 @@ export default {
     return {
       title: '',
       logicType: '',
+      prevNum: {},
       logicDisplay: {},
+      logicGoto: {},
       addInput: {}, // 选择其他需要输入
       question: {}, // 问卷题库
       answerDetail: {}
@@ -163,7 +162,7 @@ export default {
       return this.question.lists.map(list => list.iID)
     },
     // 答案
-    answer() {
+    answer () {
       const computedAnswer = {}
       this.question.lists.forEach((item, index) => {
         const tempType = item.iType
@@ -212,6 +211,7 @@ export default {
         .then(res => {
           const tempQ = JSON.parse(res.data)
           this.question = tempQ || {}
+          console.log(this.question)
           this.logicType = tempQ && tempQ.logicType ? tempQ.logicType : 'display'
 
           // 显示逻辑
@@ -219,8 +219,12 @@ export default {
             this.question.lists.forEach(list => {
               list.iOptions.forEach((option) => {
                 const temp = option.display ? option.display.split(',') : []
+                const tempC = option.childId ? option.childId.split(',') : []
                 temp.forEach(id => {
                   this.$set(this.logicDisplay, id, 0)
+                })
+                tempC.forEach(id => {
+                  this.$set(this.prevNum, id, 0)
                 })
               })
             })
@@ -230,6 +234,7 @@ export default {
               const isRadio = list.iType === 'radio'
               list.iOptions.forEach((option) => {
                 if (isRadio && option.goto) {
+                  this.$set(this.logicGoto, option.goto, 0)
                   const tempInd = this.ids.indexOf(option.goto)
                   const temp = this.ids.filter((id, i) => index < i && i <= tempInd)
                   temp.forEach(id => {
@@ -238,7 +243,7 @@ export default {
                 }
               })
             })
-            console.log(this.logicDisplay)
+            console.log(this.logicDisplay, this.logicGoto)
           }
         })
     },
@@ -262,7 +267,7 @@ export default {
         const temp = `q${index + 1}`
         const { type, checked, input } = item
         // 若该题为空，则跳过
-        if (!checked.length) return false
+        if (type !== 3 && !checked.length) return false
         switch (type) {
         // 单选框
         case 1:
@@ -317,7 +322,7 @@ export default {
         }
       })
     },
-    // 1.4.设置改题选中项
+    // 1.4.设置该题选中项
     setChecked (name, checkeds) {
       this.$nextTick(() => {
         let eles = document.getElementsByName(name)
@@ -376,7 +381,7 @@ export default {
       }
 
       // 2.3验证通过，假提交
-      this.$message.info('逻辑验证成功，可返回保存问卷至草稿箱')
+      this.$message.success('逻辑验证成功，可返回保存问卷至草稿箱')
     },
     // 3.处理选项
     changeItem(num, option, ind, e) {
@@ -386,7 +391,7 @@ export default {
       const tempType = tempQ.iType.split('_')[0]
       const tempOption = tempQ.iType.split('_')[1]
 
-      // 复选框
+      // 3.0选项答案处理 -- 复选框
       if (tempType === 'checkbox') {
         const beforeIndex = beforeValue.indexOf(option.value)
         if (beforeIndex !== -1) {
@@ -439,7 +444,7 @@ export default {
       }
 
       const selectValue = this.answer[id]
-      // 3.1选择是否隐藏输入框
+      // 3.1其他项选择 -- 是否隐藏输入框
       tempQ.iOptions.forEach((ele) => {
         if (ele.input) {
           const inputValue = ele.value
@@ -462,9 +467,10 @@ export default {
         }
       })
 
-      // 3.2处理显示
+      // 3.2逻辑控制 -- 显示
       if (this.logicType === 'display') {
         const tempD = option.display ? option.display.split(',') : []
+        // const tempC = option.childId ? option.childId.split(',') : []
         // 3.2.1包含该选项
         if (selectValue.indexOf(option.value) !== -1) {
           tempD.forEach(d => { this.logicDisplay[d]++ })
@@ -476,6 +482,7 @@ export default {
               // 其他项 -- 清空逻辑控制的其他项
               const eleD = ele.display ? ele.display.split(',') : []
               eleD.forEach(d => {
+                // 若其他项也包含此逻辑题
                 if (tempD.includes(d)) {
                   this.logicDisplay[d] > 1 && this.logicDisplay[d]--
                 } else {
@@ -487,32 +494,104 @@ export default {
                   this.removeChecked(`q${tempNum}`)
                 }
               })
+              // 其他项 -- 清空逻辑相关的子孙题
+              const eleC = ele.childId ? ele.childId.split(',') : []
+              eleC.forEach(d => {
+                this.logicDisplay[d] > 0 && this.logicDisplay[d]--
+                if (!this.logicDisplay[d]) {
+                  const tempNum = this.ids.indexOf(d) + 1
+                  this.answer[tempNum] = Array.isArray(this.answer[tempNum]) ? [] : ''
+                  this.removeChecked(`q${tempNum}`)
+                }
+              })
             })
           }
         } else {
-        // 3.2.2不含
+        // 3.2.2不含该选项
           tempD.forEach(d => {
+            // 直接一级控制题情况
             this.logicDisplay[d] > 0 && this.logicDisplay[d]--
+
+            const i = this.ids.indexOf(d)
+            const childAnswer = this.answer[i + 1]
+            // 若逻辑题已选择
+            if (childAnswer.length) {
+              this.question.lists[i].iOptions.forEach(o => {
+                // 当前题是否选中此选项
+                if (childAnswer.indexOf(o.value) !== -1) {
+                  // 该项一级控制题清空 -- 同题只其他项一致的情况，只执行一次
+                  const tempK = o.display ? o.display.split(',') : []
+                  tempK.forEach(k => {
+                    this.logicDisplay[k] > 0 && this.logicDisplay[k]--
+                    if (!this.logicDisplay[k]) {
+                      const kNum = this.ids.indexOf(k) + 1
+                      this.answer[kNum] = Array.isArray(this.answer[kNum]) ? [] : ''
+                      this.removeChecked(`q${kNum}`)
+                    }
+                  })
+                  // 子孙题控制清空
+                  const childLogic = o.childId ? o.childId.split(',') : []
+                  childLogic.forEach(c => {
+                    this.logicDisplay[c] > 0 && this.logicDisplay[c]--
+                    if (!this.logicDisplay[c]) {
+                      const cNum = this.ids.indexOf(c) + 1
+                      this.answer[cNum] = Array.isArray(this.answer[cNum]) ? [] : ''
+                      this.removeChecked(`q${cNum}`)
+                    }
+                  })
+                }
+              })
+            }
+
+            // 若逻辑题隐藏 -- 重置答案
             if (!this.logicDisplay[d]) {
-              const tempNum = this.ids.indexOf(d) + 1
-              this.answer[tempNum] = Array.isArray(this.answer[tempNum]) ? [] : ''
-              this.removeChecked(`q${tempNum}`)
+              const dNum = i + 1
+              this.answer[dNum] = Array.isArray(this.answer[dNum]) ? [] : ''
+              this.removeChecked(`q${dNum}`)
             }
           })
         }
+        console.log(this.prevNum, this.logicDisplay)
       } else {
-      // 3.3处理跳题
+      // 3.3处理跳题 -- 只针对单选题
         if (tempType === 'radio') {
-          if (option.goto) {
+          const tempD = option.goto ? option.goto.split(',') : []
+          if (tempD.length) {
             this.logicDisplay[option.goto]++
+            Object.keys(this.logicDisplay).forEach(key => {
+              if (!Object.keys(this.logicGoto).includes(key) && this.logicDisplay[key] > 0) {
+                this.logicDisplay[key]--
+              }
+            })
+          } else {
+            Object.keys(this.logicDisplay).forEach(key => {
+              const i = this.ids.indexOf(key)
+              if (!Object.keys(this.logicGoto).includes(key) && (num < i)) {
+                this.logicDisplay[key]++
+              }
+            })
           }
-          // 单选题项
           tempQ.iOptions.forEach((ele, i) => {
             // 排除当前选项
             if (ind === i) return false
             // 其他项 -- 清空逻辑控制的其他项
             const eleD = ele.goto ? ele.goto.split(',') : []
             eleD.forEach(d => {
+              // 若其他项也包含此逻辑题
+              if (tempD.includes(d)) {
+                this.logicDisplay[d] > 1 && this.logicDisplay[d]--
+              } else {
+                this.logicDisplay[d] > 0 && this.logicDisplay[d]--
+              }
+              if (!this.logicDisplay[d]) {
+                const tempNum = this.ids.indexOf(d) + 1
+                this.answer[tempNum] = Array.isArray(this.answer[tempNum]) ? [] : ''
+                this.removeChecked(`q${tempNum}`)
+              }
+            })
+            // 其他项 -- 清空逻辑相关的子孙题
+            const eleC = ele.childId ? ele.childId.split(',') : []
+            eleC.forEach(d => {
               this.logicDisplay[d] > 0 && this.logicDisplay[d]--
               if (!this.logicDisplay[d]) {
                 const tempNum = this.ids.indexOf(d) + 1
@@ -521,6 +600,7 @@ export default {
               }
             })
           })
+          console.log(this.logicDisplay)
         }
       }
     },

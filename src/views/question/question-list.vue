@@ -76,7 +76,7 @@
             <div class="item-summary">
               <el-row>
                 <el-col :span="3">
-                  <p class="text-ellipsis">问卷ID：{{item.id}}</p>
+                  <p class="item-summary-id text-ellipsis">问卷ID：{{item.id}}</p>
                 </el-col>
                 <el-col :span="11">
                   <p class="text-ellipsis">问卷标题：{{item.title}}</p>
@@ -90,13 +90,10 @@
                 <el-col :span="2">
                   <p class="text-right">
                     <template v-if="item.type === '0'">
-                      <el-tag
-                        type="success"
-                        disable-transitions>{{item.type_name}}</el-tag>
+                      <span class="item-summary-tag tag-0">{{item.type_name}}</span>
                     </template>
                     <template v-else>
-                      <el-tag
-                        disable-transitions>{{item.type_name}}</el-tag>
+                      <span class="item-summary-tag">{{item.type_name}}</span>
                     </template>
                   </p>
                 </el-col>
@@ -300,15 +297,34 @@ export default {
 <style rel="stylesheet/scss" lang="scss" scoped>
 .search-list{
   .list-item{
-    background-color: rgb(242, 242, 242);
+    border: 1px solid #d7d8db;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12);
     &+.list-item{
       margin-top: 26px;
     }
     .item-summary{
       overflow: hidden;
-      background-color: #d7d7d7;
+      background-color: #f8f8f9;
       padding: 0 10px;
       line-height: 40px;
+      border-bottom: 1px solid #d7d8db;
+      .item-summary-id{
+        color: #8694ac;
+      }
+      .item-summary-tag{
+        &.tag-0{
+          background: #75d08d;
+        }
+        width: 60px;
+        height: 30px;
+        background: #55a8fd;
+        display: inline-block;
+        text-align: center;
+        line-height: 30px;
+        font-size: 12px;
+        border-radius: 16px;
+        color: #fff;
+      }
     }
     .item-control{
       padding: 10px;
@@ -319,21 +335,25 @@ export default {
         }
       }
       .control-custom{
-        width: 104px;
-        height: 40px;
+        width: 98px;
+        height: 34px;
         cursor: pointer;
         margin-top: 28px;
-        line-height: 40px;
+        line-height: 34px;
         border-radius: 5px;
         display: inline-block;
+        -webkit-transition: all 0.2s;
         transition: all 0.2s;
-        border: 1px solid rgb(121, 121, 121);
+        border: 1px solid #cdd1d5;
+        color: #717171;
         &:hover{
-          border-color: rgb(204, 204, 204);
-          background-color: rgb(204, 204, 204);
+          background: #8cc0ff;
+          color: #fff;
+          border-color: #68acff;
         }
-        &.not-allow{
-          border-color: #ccc !important;
+        &.not-allow:hover{
+          background: #ccc;
+          border-color: #cdd1d5;
         }
       }
     }
