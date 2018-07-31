@@ -51,8 +51,8 @@
                 v-model="ruleForm.remark">
               </el-input>
             </el-form-item>
-            <el-form-item label="设定时间">
-              <el-switch :disabled="isLook" active-value="1" inactive-value="0" v-model="ruleForm.open_status"></el-switch>
+            <el-form-item label="设定时间（必设）">
+              <el-switch :disabled="true" active-value="1" inactive-value="0" v-model="ruleForm.open_status"></el-switch>
             </el-form-item>
             <template v-if="ruleForm.open_status === '1'">
               <el-form-item
@@ -62,8 +62,9 @@
                 <el-date-picker
                   :picker-options="{disabledDate: (time) => {return time.getTime() > Date.parse(ruleForm.end_date)}}"
                   :disabled="isLook"
-                  type="date"
-                  value-format="yyyy-MM-dd"
+                  type="datetime"
+                  value-format="yyyy-MM-dd HH:mm:ss"
+                  default-time="00:00:00"
                   placeholder="请选择"
                   v-model="ruleForm.start_date"></el-date-picker>
               </el-form-item>
@@ -75,8 +76,9 @@
                 <el-date-picker
                   :picker-options="{disabledDate: (time) => {return time.getTime() < Date.parse(ruleForm.start_date)}}"
                   :disabled="isLook"
-                  type="date"
-                  value-format="yyyy-MM-dd"
+                  type="datetime"
+                  value-format="yyyy-MM-dd HH:mm:ss"
+                  default-time="23:59:59"
                   placeholder="请选择"
                   v-model="ruleForm.end_date"></el-date-picker>
               </el-form-item>
@@ -271,7 +273,7 @@ const defaultForm = {
   project_id: '',
   app_ids: [],
   remark: '',
-  open_status: '',
+  open_status: '1',
   start_date: '',
   end_date: '',
   need_level: '',
@@ -504,6 +506,12 @@ export default {
           return this.ruleForm.app_ids.sort().includes(item.appid)
         })
         this.awardForm.appid = this.awardForm.appid || this.ruleForm.app_ids[0]
+
+        if (this.awardForm.item_type) {
+          const { item_type, appid } = this.awardForm
+          const params = { type: item_type, appid: appid }
+          this.fetchCpList(params)
+        }
       }
     },
     // 2.转换获取CP奖品列表的参数
@@ -614,14 +622,18 @@ export default {
           const params = Object.assign({}, this.ruleForm, {app_ids, submit_text})
           this.$store.dispatch(this.postType, params)
             .then(res => {
-              const { question_id } = res.data
+              const { question_id } = res.data || {}
               this.$message({
                 type: 'success',
                 message: '操作成功!',
                 duration: 1 * 1000,
                 onClose: () => {
                   // 进入问题创建页
-                  this.$router.push({ name: 'detail-import', params: { id: question_id } })
+                  if (question_id) {
+                    this.$router.push({ name: 'detail-import', params: { id: question_id } })
+                  } else {
+                    this.$router.push({ name: 'detail-import', params: { id: this.id } })
+                  }
                 }
               })
             })

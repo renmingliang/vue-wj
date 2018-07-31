@@ -68,6 +68,7 @@
           :key="index">
           <h3 class="analyse-item-title">{{item.title}}</h3>
           <el-table
+            v-if="item.list"
             class="analyse-item-table"
             border
             stripe
@@ -312,6 +313,9 @@ export default {
   margin-bottom: 20px;
 }
 .analyse-item-title{
+  &+.analyse-info{
+    margin-top: 20px;
+  }
   font-size: 16px;
   font-weight: 400;
   color: #333333;

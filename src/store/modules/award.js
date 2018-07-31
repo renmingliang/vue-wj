@@ -31,6 +31,7 @@ const award = {
   actions: {
     // 问卷设置 --> CP奖品
     ITEM_CP_LIST({ commit }, params) {
+      commit('AWARD_CP_LIST', { list: [] })
       return new Promise((resolve, reject) => {
         api.itemCpList(params)
           .then(res => {

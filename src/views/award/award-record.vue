@@ -174,6 +174,7 @@ import { mapGetters } from 'vuex'
 import qs from 'qs'
 
 const defaultStatusOptions = [
+  { label: '未发送', value: '0' },
   { label: '成功', value: '1' },
   { label: '失败', value: '2' }
 ]

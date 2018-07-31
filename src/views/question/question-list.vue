@@ -82,7 +82,7 @@
                   <p class="text-ellipsis">问卷标题：{{item.title}}</p>
                 </el-col>
                 <el-col :span="3">
-                  <p class="text-center">{{item.status_name}}</p>
+                  <p class="text-center"><span class="icon-status" :class="`status-${item.status}`">{{item.status_name}}</span></p>
                 </el-col>
                 <el-col :span="5">
                   <p class="text-ellipsis">所属项目：{{item.project_name}}</p>
@@ -267,6 +267,8 @@ export default {
               duration: 1 * 1000,
               onClose: function() {
                 // 更新获取数据列表
+                const isPageOne = that.questionTotal % that.listQuery.size === 1
+                if (isPageOne) { that.listQuery.page-- }
                 that.getList()
               }
             })
@@ -360,6 +362,47 @@ export default {
     .red{
       font-weight: normal;
     }
+  }
+}
+
+.icon-status{
+  display: inline-block;
+  padding: 2px 12px 2px 27px;
+  border: 1px solid #ddd;
+  border-radius: 30px;
+  line-height: 18px;
+  font-size: 12px;
+  background-position: 10px center;
+  background-repeat: no-repeat;
+  &.status-0{
+    color: #979fd6;
+    border-color: #bdd9f5;
+    background-image: url(../../assets/images/status-0.png);
+  }
+  &.status-1{
+    color: #55a8fd;
+    border-color: #55a8fd;
+    background-image: url(../../assets/images/status-1.png);
+  }
+  &.status-2{
+    color: #fc8b37;
+    border-color: #fc8b37;
+    background-image: url(../../assets/images/status-2.png);
+  }
+  &.status-3{
+    color: #fe7373;
+    border-color: #ff7272;
+    background-image: url(../../assets/images/status-3.png);
+  }
+  &.status-4{
+    color: #6db981;
+    border-color: #c6ead0;
+    background-image: url(../../assets/images/status-4.png);
+  }
+  &.status-5{
+    color: #777b95;
+    border-color: #cfdbe6;
+    background-image: url(../../assets/images/status-5.png);
   }
 }
 </style>

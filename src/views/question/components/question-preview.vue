@@ -145,7 +145,6 @@ export default {
     return {
       title: '',
       logicType: '',
-      prevNum: {},
       logicDisplay: {},
       logicGoto: {},
       addInput: {}, // 选择其他需要输入
@@ -219,12 +218,8 @@ export default {
             this.question.lists.forEach(list => {
               list.iOptions.forEach((option) => {
                 const temp = option.display ? option.display.split(',') : []
-                const tempC = option.childId ? option.childId.split(',') : []
                 temp.forEach(id => {
                   this.$set(this.logicDisplay, id, 0)
-                })
-                tempC.forEach(id => {
-                  this.$set(this.prevNum, id, 0)
                 })
               })
             })
@@ -243,7 +238,7 @@ export default {
                 }
               })
             })
-            console.log(this.logicDisplay, this.logicGoto)
+            console.log(this.logicDisplay)
           }
         })
     },
@@ -380,6 +375,8 @@ export default {
         }
       }
 
+      console.log(this.answer)
+
       // 2.3验证通过，假提交
       this.$message.success('逻辑验证成功，可返回保存问卷至草稿箱')
     },
@@ -470,38 +467,63 @@ export default {
       // 3.2逻辑控制 -- 显示
       if (this.logicType === 'display') {
         const tempD = option.display ? option.display.split(',') : []
-        // const tempC = option.childId ? option.childId.split(',') : []
         // 3.2.1包含该选项
         if (selectValue.indexOf(option.value) !== -1) {
           tempD.forEach(d => { this.logicDisplay[d]++ })
-          // 3.2.1.1单选框需要排他
-          if (tempType === 'radio') {
-            tempQ.iOptions.forEach((ele, i) => {
-              // 排除当前选项
-              if (ind === i) return false
-              // 其他项 -- 清空逻辑控制的其他项
+          // 3.2.1.1单选框需要排他-- 注意只需处理上次选择的项
+          if (beforeValue && tempType === 'radio') {
+            tempQ.iOptions.forEach(ele => {
+              // 非上次选择的值，结束终止
+              if (beforeValue !== ele.value) return false
+              // 其他选项
               const eleD = ele.display ? ele.display.split(',') : []
               eleD.forEach(d => {
-                // 若其他项也包含此逻辑题
-                if (tempD.includes(d)) {
-                  this.logicDisplay[d] > 1 && this.logicDisplay[d]--
-                } else {
-                  this.logicDisplay[d] > 0 && this.logicDisplay[d]--
-                }
-                if (!this.logicDisplay[d]) {
-                  const tempNum = this.ids.indexOf(d) + 1
-                  this.answer[tempNum] = Array.isArray(this.answer[tempNum]) ? [] : ''
-                  this.removeChecked(`q${tempNum}`)
-                }
-              })
-              // 其他项 -- 清空逻辑相关的子孙题
-              const eleC = ele.childId ? ele.childId.split(',') : []
-              eleC.forEach(d => {
                 this.logicDisplay[d] > 0 && this.logicDisplay[d]--
+
+                const i = this.ids.indexOf(d)
                 if (!this.logicDisplay[d]) {
-                  const tempNum = this.ids.indexOf(d) + 1
+                  // -- 处理子项逻辑
+                  const childAnswer = this.answer[i + 1]
+                  // 若逻辑题已选择
+                  if (childAnswer.length) {
+                    this.question.lists[i].iOptions.forEach(o => {
+                      // 当前题是否选中此选项
+                      if (childAnswer.indexOf(o.value) !== -1) {
+                        // 该项一级控制题
+                        const tempK = o.display ? o.display.split(',') : []
+                        tempK.forEach(k => {
+                          this.logicDisplay[k] > 0 && this.logicDisplay[k]--
+                          if (!this.logicDisplay[k]) {
+                            const kNum = this.ids.indexOf(k) + 1
+                            this.answer[kNum] = Array.isArray(this.answer[kNum]) ? [] : ''
+                            this.removeChecked(`q${kNum}`)
+                          }
+                        })
+                        // 子孙题控制
+                        const childLogic = o.childId ? o.childId.split(',') : []
+                        childLogic.forEach(c => {
+                          this.logicDisplay[c] > 0 && this.logicDisplay[c]--
+                          if (!this.logicDisplay[c]) {
+                            const cNum = this.ids.indexOf(c) + 1
+                            this.answer[cNum] = Array.isArray(this.answer[cNum]) ? [] : ''
+                            this.removeChecked(`q${cNum}`)
+                          }
+                        })
+                      }
+                    })
+                  }
+
+                  // -- 重置答案
+                  const tempNum = i + 1
+                  const tempItemType = this.question.lists[i].iType
                   this.answer[tempNum] = Array.isArray(this.answer[tempNum]) ? [] : ''
-                  this.removeChecked(`q${tempNum}`)
+                  if (tempItemType.indexOf('matrix') !== -1) {
+                    this.question.lists[i].iSubTitles.forEach((s, n) => {
+                      this.removeChecked(`q${tempNum}_${n + 1}`)
+                    })
+                  } else {
+                    this.removeChecked(`q${tempNum}`)
+                  }
                 }
               })
             })
@@ -513,93 +535,180 @@ export default {
             this.logicDisplay[d] > 0 && this.logicDisplay[d]--
 
             const i = this.ids.indexOf(d)
-            const childAnswer = this.answer[i + 1]
-            // 若逻辑题已选择
-            if (childAnswer.length) {
-              this.question.lists[i].iOptions.forEach(o => {
-                // 当前题是否选中此选项
-                if (childAnswer.indexOf(o.value) !== -1) {
-                  // 该项一级控制题清空 -- 同题只其他项一致的情况，只执行一次
-                  const tempK = o.display ? o.display.split(',') : []
-                  tempK.forEach(k => {
-                    this.logicDisplay[k] > 0 && this.logicDisplay[k]--
-                    if (!this.logicDisplay[k]) {
-                      const kNum = this.ids.indexOf(k) + 1
-                      this.answer[kNum] = Array.isArray(this.answer[kNum]) ? [] : ''
-                      this.removeChecked(`q${kNum}`)
-                    }
-                  })
-                  // 子孙题控制清空
-                  const childLogic = o.childId ? o.childId.split(',') : []
-                  childLogic.forEach(c => {
-                    this.logicDisplay[c] > 0 && this.logicDisplay[c]--
-                    if (!this.logicDisplay[c]) {
-                      const cNum = this.ids.indexOf(c) + 1
-                      this.answer[cNum] = Array.isArray(this.answer[cNum]) ? [] : ''
-                      this.removeChecked(`q${cNum}`)
-                    }
-                  })
-                }
-              })
-            }
-
-            // 若逻辑题隐藏 -- 重置答案
+            // 若逻辑题隐藏
             if (!this.logicDisplay[d]) {
+              // -- 处理子项逻辑
+              const childAnswer = this.answer[i + 1]
+              // 若逻辑题已选择
+              if (childAnswer.length) {
+                this.question.lists[i].iOptions.forEach(o => {
+                  // 当前题是否选中此选项
+                  if (childAnswer.indexOf(o.value) !== -1) {
+                    // 该项一级控制题
+                    const tempK = o.display ? o.display.split(',') : []
+                    tempK.forEach(k => {
+                      this.logicDisplay[k] > 0 && this.logicDisplay[k]--
+                      if (!this.logicDisplay[k]) {
+                        const kNum = this.ids.indexOf(k) + 1
+                        this.answer[kNum] = Array.isArray(this.answer[kNum]) ? [] : ''
+                        this.removeChecked(`q${kNum}`)
+                      }
+                    })
+                    // 子孙题控制
+                    const childLogic = o.childId ? o.childId.split(',') : []
+                    childLogic.forEach(c => {
+                      this.logicDisplay[c] > 0 && this.logicDisplay[c]--
+                      if (!this.logicDisplay[c]) {
+                        const cNum = this.ids.indexOf(c) + 1
+                        this.answer[cNum] = Array.isArray(this.answer[cNum]) ? [] : ''
+                        this.removeChecked(`q${cNum}`)
+                      }
+                    })
+                  }
+                })
+              }
+
+              // -- 重置答案
               const dNum = i + 1
+              const tempItemType = this.question.lists[i].iType
               this.answer[dNum] = Array.isArray(this.answer[dNum]) ? [] : ''
-              this.removeChecked(`q${dNum}`)
+              if (tempItemType.indexOf('matrix') !== -1) {
+                this.question.lists[i].iSubTitles.forEach((s, n) => {
+                  this.removeChecked(`q${dNum}_${n + 1}`)
+                })
+              } else {
+                this.removeChecked(`q${dNum}`)
+              }
             }
           })
         }
-        console.log(this.prevNum, this.logicDisplay)
+        console.log('----- 显示 ----')
+        console.log(this.logicDisplay)
       } else {
       // 3.3处理跳题 -- 只针对单选题
         if (tempType === 'radio') {
-          const tempD = option.goto ? option.goto.split(',') : []
-          if (tempD.length) {
-            this.logicDisplay[option.goto]++
-            Object.keys(this.logicDisplay).forEach(key => {
-              if (!Object.keys(this.logicGoto).includes(key) && this.logicDisplay[key] > 0) {
-                this.logicDisplay[key]--
+          // 若不存在跳题，取当前题下一题
+          const tempD = option.goto || this.question.lists[id].iID
+
+          // 需处理上次选择的项
+          if (beforeValue) {
+            tempQ.iOptions.forEach(ele => {
+              // 非上次选择的值，结束终止
+              if (beforeValue !== ele.value) return false
+
+              // 处理上一选项的逻辑
+              const eleD = ele.goto
+              const t = this.ids.indexOf(eleD) !== -1 ? this.ids.indexOf(eleD) : id
+              if (eleD) {
+                this.logicDisplay[eleD] > 0 && this.logicDisplay[eleD]--
+                if (!this.logicDisplay[eleD]) {
+                  // -- 处理子项逻辑
+                  const childAnswer = this.answer[t + 1]
+                  // 若逻辑题已选择
+                  if (childAnswer.length) {
+                    this.question.lists[t].iOptions.forEach(o => {
+                      // 当前题是否选中此选项
+                      if (childAnswer.indexOf(o.value) !== -1) {
+                        // 该项一级控制题
+                        const tempK = o.goto
+                        this.logicDisplay[tempK] > 0 && this.logicDisplay[tempK]--
+                        const i = this.ids.indexOf(tempK)
+                        if (!this.logicDisplay[tempK]) {
+                          const kNum = i + 1
+                          this.answer[kNum] = Array.isArray(this.answer[kNum]) ? [] : ''
+                          this.removeChecked(`q${kNum}`)
+                        }
+
+                        // 当前跳题与下一个跳题控制之间的其他题
+                        for (let n = i; n < this.question.lists.length; n++) {
+                          const nextList = this.question.lists[n]
+                          const gotoId = nextList.iID
+                          const nextGoto = nextList.iOptions.filter(o => o.goto)
+                          if (!nextGoto.length) {
+                            if (tempD !== gotoId && this.logicDisplay[gotoId] > 0) {
+                              this.logicDisplay[gotoId]--
+                            }
+                            // -- 重置答案
+                            if (!this.logicDisplay[gotoId]) {
+                              const tempNum = n + 1
+                              const tempItemType = nextList.iType
+                              this.answer[tempNum] = Array.isArray(this.answer[tempNum]) ? [] : ''
+                              if (tempItemType.indexOf('matrix') !== -1) {
+                                nextList.iSubTitles.forEach((s, n) => {
+                                  this.removeChecked(`q${tempNum}_${n + 1}`)
+                                })
+                              } else {
+                                this.removeChecked(`q${tempNum}`)
+                              }
+                            }
+                          } else {
+                            return false
+                          }
+                        }
+                      }
+                    })
+                  }
+
+                  // -- 重置答案
+                  const tempNum = t + 1
+                  const tempItemType = this.question.lists[t].iType
+                  this.answer[tempNum] = Array.isArray(this.answer[tempNum]) ? [] : ''
+                  if (tempItemType.indexOf('matrix') !== -1) {
+                    this.question.lists[t].iSubTitles.forEach((s, n) => {
+                      this.removeChecked(`q${tempNum}_${n + 1}`)
+                    })
+                  } else {
+                    this.removeChecked(`q${tempNum}`)
+                  }
+                }
               }
-            })
-          } else {
-            Object.keys(this.logicDisplay).forEach(key => {
-              const i = this.ids.indexOf(key)
-              if (!Object.keys(this.logicGoto).includes(key) && (num < i)) {
-                this.logicDisplay[key]++
+
+              // 当前跳题与下一个跳题控制之间的其他题
+              for (let n = t; n < this.question.lists.length; n++) {
+                const nextList = this.question.lists[n]
+                const gotoId = nextList.iID
+                const nextGoto = nextList.iOptions.filter(o => o.goto)
+                if (!nextGoto.length) {
+                  this.logicDisplay[gotoId] > 0 && this.logicDisplay[gotoId]--
+                  // -- 重置答案
+                  if (!this.logicDisplay[gotoId]) {
+                    const tempNum = n + 1
+                    const tempItemType = nextList.iType
+                    this.answer[tempNum] = Array.isArray(this.answer[tempNum]) ? [] : ''
+                    if (tempItemType.indexOf('matrix') !== -1) {
+                      nextList.iSubTitles.forEach((s, n) => {
+                        this.removeChecked(`q${tempNum}_${n + 1}`)
+                      })
+                    } else {
+                      this.removeChecked(`q${tempNum}`)
+                    }
+                  }
+                } else {
+                  return false
+                }
               }
             })
           }
-          tempQ.iOptions.forEach((ele, i) => {
-            // 排除当前选项
-            if (ind === i) return false
-            // 其他项 -- 清空逻辑控制的其他项
-            const eleD = ele.goto ? ele.goto.split(',') : []
-            eleD.forEach(d => {
-              // 若其他项也包含此逻辑题
-              if (tempD.includes(d)) {
-                this.logicDisplay[d] > 1 && this.logicDisplay[d]--
-              } else {
-                this.logicDisplay[d] > 0 && this.logicDisplay[d]--
+
+          // 指定跳题处理
+          this.logicDisplay[tempD]++
+
+          // 当前指定跳题与下一个跳题控制之间的其他题显示
+          const i = this.ids.indexOf(tempD)
+          for (let n = i; n < this.question.lists.length; n++) {
+            const nextList = this.question.lists[n]
+            const gotoId = nextList.iID
+            const nextGoto = nextList.iOptions.filter(o => o.goto)
+            if (!nextGoto.length) {
+              if (tempD !== gotoId && this.logicDisplay.hasOwnProperty(gotoId)) {
+                this.logicDisplay[gotoId]++
               }
-              if (!this.logicDisplay[d]) {
-                const tempNum = this.ids.indexOf(d) + 1
-                this.answer[tempNum] = Array.isArray(this.answer[tempNum]) ? [] : ''
-                this.removeChecked(`q${tempNum}`)
-              }
-            })
-            // 其他项 -- 清空逻辑相关的子孙题
-            const eleC = ele.childId ? ele.childId.split(',') : []
-            eleC.forEach(d => {
-              this.logicDisplay[d] > 0 && this.logicDisplay[d]--
-              if (!this.logicDisplay[d]) {
-                const tempNum = this.ids.indexOf(d) + 1
-                this.answer[tempNum] = Array.isArray(this.answer[tempNum]) ? [] : ''
-                this.removeChecked(`q${tempNum}`)
-              }
-            })
-          })
+            } else {
+              return false
+            }
+          }
+
+          console.log('----- 跳题 ----')
           console.log(this.logicDisplay)
         }
       }

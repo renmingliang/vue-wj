@@ -308,6 +308,8 @@ export default {
               duration: 1 * 1000,
               onClose: function() {
                 // 更新获取数据列表
+                const isPageOne = that.projectTotal % that.listQuery.size === 1
+                if (isPageOne) { that.listQuery.page-- }
                 that.getList()
               }
             })
