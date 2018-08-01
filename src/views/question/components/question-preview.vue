@@ -664,14 +664,10 @@ export default {
                     this.answer[tempNum] = Array.isArray(this.answer[tempNum]) ? [] : ''
                     this.removeChecked(`q${tempNum}`)
                   }
-                  return false
                 }
               }
             })
           }
-
-          // 指定跳题处理
-          // this.logicDisplay[tempD]++
 
           // 当前指定跳题与下一个跳题控制之间的其他题显示
           const i = this.ids.indexOf(tempD)
@@ -681,10 +677,12 @@ export default {
             const nextGoto = nextList.iOptions.filter(o => o.goto)
             if (!nextGoto.length) {
               // 非逻辑题
-              this.logicDisplay.hasOwnProperty(gotoId) && this.logicDisplay[gotoId]++
+              // this.logicDisplay.hasOwnProperty(gotoId) && this.logicDisplay[gotoId]++
+              this.logicDisplay[gotoId] === 0 && this.logicDisplay[gotoId]++
             } else {
               // 包含该逻辑题
-              this.logicDisplay.hasOwnProperty(gotoId) && this.logicDisplay[gotoId]++
+              // this.logicDisplay.hasOwnProperty(gotoId) && this.logicDisplay[gotoId]++
+              this.logicDisplay[gotoId] === 0 && this.logicDisplay[gotoId]++
               return false
             }
           }

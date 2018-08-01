@@ -183,16 +183,17 @@ export default {
         .then(res => {
           const temp = res.data
           this.infoData = [temp]
+          this.questionType = temp.type
         })
     },
     // 1.获取答题列表数据
     getList() {
-      this.$store.dispatch('QUESTION_ANSWER_LIST', {question_id: this.id})
+      const params = Object.assign({}, this.listQuery, {question_id: this.id})
+      this.$store.dispatch('QUESTION_ANSWER_LIST', params)
         .then(res => {
-          const { list, count, type } = res.data
+          const { list, count } = res.data
           this.listData = list
           this.listTotal = +count
-          this.questionType = type
         })
     },
     // 2.单页最大显示数据条数

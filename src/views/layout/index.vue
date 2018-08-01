@@ -45,7 +45,9 @@ export default {
     margin-left: 200px;
     margin-top: 78px;
     .app-main{
+      width: 100%;
       padding: 0;
+      overflow-y: scroll;
       min-width: 900px;
       background: #f2f2f2;
     }
