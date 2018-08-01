@@ -129,7 +129,7 @@
         </el-table-column>
         <el-table-column
           prop="server_name"
-          label="服务器名称"
+          label="服务器"
           align="center">
         </el-table-column>
         <el-table-column

@@ -159,7 +159,7 @@
       </div>
     </el-card>
 
-    <el-card v-if="isPublish" class="box-card" shadow="never">
+    <el-card v-if="isPublish && questionType === '1'" class="box-card" shadow="never">
       <div slot="header" class="card-header">
         <span class="card-title">问卷链接</span>
       </div>
@@ -181,6 +181,7 @@ export default {
   data() {
     return {
       id: this.$route.params.id,
+      questionType: '0',
       infoData: null,
       infoStatus: '',
       url: ''
@@ -221,6 +222,7 @@ export default {
           const temp = res.data
           this.infoData = [temp]
           this.infoStatus = temp.status
+          this.questionType = temp.type
           this.url = temp.url
         })
     },
