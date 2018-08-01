@@ -306,7 +306,7 @@ export default {
     }
     .item-summary{
       overflow: hidden;
-      background-color: #f8f8f9;
+      background-color: #f0f0f0;
       padding: 0 10px;
       line-height: 40px;
       border-bottom: 1px solid #d7d8db;

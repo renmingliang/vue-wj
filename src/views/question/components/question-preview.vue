@@ -238,7 +238,7 @@ export default {
                 }
               })
             })
-            console.log(this.logicDisplay)
+            console.log(this.logicGoto, this.logicDisplay)
           }
         })
     },
@@ -599,69 +599,6 @@ export default {
               // 处理上一选项的逻辑
               const eleD = ele.goto
               const t = this.ids.indexOf(eleD) !== -1 ? this.ids.indexOf(eleD) : id
-              if (eleD) {
-                this.logicDisplay[eleD] > 0 && this.logicDisplay[eleD]--
-                if (!this.logicDisplay[eleD]) {
-                  // -- 处理子项逻辑
-                  const childAnswer = this.answer[t + 1]
-                  // 若逻辑题已选择
-                  if (childAnswer.length) {
-                    this.question.lists[t].iOptions.forEach(o => {
-                      // 当前题是否选中此选项
-                      if (childAnswer.indexOf(o.value) !== -1) {
-                        // 该项一级控制题
-                        const tempK = o.goto
-                        this.logicDisplay[tempK] > 0 && this.logicDisplay[tempK]--
-                        const i = this.ids.indexOf(tempK)
-                        if (!this.logicDisplay[tempK]) {
-                          const kNum = i + 1
-                          this.answer[kNum] = Array.isArray(this.answer[kNum]) ? [] : ''
-                          this.removeChecked(`q${kNum}`)
-                        }
-
-                        // 当前跳题与下一个跳题控制之间的其他题
-                        for (let n = i; n < this.question.lists.length; n++) {
-                          const nextList = this.question.lists[n]
-                          const gotoId = nextList.iID
-                          const nextGoto = nextList.iOptions.filter(o => o.goto)
-                          if (!nextGoto.length) {
-                            if (tempD !== gotoId && this.logicDisplay[gotoId] > 0) {
-                              this.logicDisplay[gotoId]--
-                            }
-                            // -- 重置答案
-                            if (!this.logicDisplay[gotoId]) {
-                              const tempNum = n + 1
-                              const tempItemType = nextList.iType
-                              this.answer[tempNum] = Array.isArray(this.answer[tempNum]) ? [] : ''
-                              if (tempItemType.indexOf('matrix') !== -1) {
-                                nextList.iSubTitles.forEach((s, n) => {
-                                  this.removeChecked(`q${tempNum}_${n + 1}`)
-                                })
-                              } else {
-                                this.removeChecked(`q${tempNum}`)
-                              }
-                            }
-                          } else {
-                            return false
-                          }
-                        }
-                      }
-                    })
-                  }
-
-                  // -- 重置答案
-                  const tempNum = t + 1
-                  const tempItemType = this.question.lists[t].iType
-                  this.answer[tempNum] = Array.isArray(this.answer[tempNum]) ? [] : ''
-                  if (tempItemType.indexOf('matrix') !== -1) {
-                    this.question.lists[t].iSubTitles.forEach((s, n) => {
-                      this.removeChecked(`q${tempNum}_${n + 1}`)
-                    })
-                  } else {
-                    this.removeChecked(`q${tempNum}`)
-                  }
-                }
-              }
 
               // 当前跳题与下一个跳题控制之间的其他题
               for (let n = t; n < this.question.lists.length; n++) {
@@ -684,6 +621,49 @@ export default {
                     }
                   }
                 } else {
+                  this.logicDisplay[gotoId] > 0 && this.logicDisplay[gotoId]--
+
+                  if (!this.logicDisplay[gotoId]) {
+                    // 处理子项
+                    const childAnswer = this.answer[n + 1]
+                    if (childAnswer.length) {
+                      nextList.iOptions.forEach(o => {
+                        // 当前题是否选中此选项
+                        if (childAnswer.indexOf(o.value) !== -1) {
+                          // 该项一级控制题
+                          const tempK = o.goto
+                          if (tempK) {
+                            this.logicDisplay[tempK] > 0 && this.logicDisplay[tempK]--
+                            if (!this.logicDisplay[tempK]) {
+                              const i = this.ids.indexOf(tempK)
+                              const kNum = i + 1
+                              const tempItemType = this.question.lists[i].iType
+                              this.answer[kNum] = Array.isArray(this.answer[kNum]) ? [] : ''
+                              if (tempItemType.indexOf('matrix') !== -1) {
+                                this.question.lists[i].iSubTitles.forEach((s, n) => {
+                                  this.removeChecked(`q${kNum}_${n + 1}`)
+                                })
+                              } else {
+                                this.removeChecked(`q${kNum}`)
+                              }
+                            }
+                          } else {
+                            Object.keys(this.logicDisplay).forEach(k => {
+                              const d = this.ids.indexOf(k)
+                              if (n < d && this.logicDisplay[k] > 0) {
+                                this.logicDisplay[k]--
+                              }
+                            })
+                          }
+                        }
+                      })
+                    }
+
+                    // 处理该项
+                    const tempNum = n + 1
+                    this.answer[tempNum] = Array.isArray(this.answer[tempNum]) ? [] : ''
+                    this.removeChecked(`q${tempNum}`)
+                  }
                   return false
                 }
               }
@@ -691,7 +671,7 @@ export default {
           }
 
           // 指定跳题处理
-          this.logicDisplay[tempD]++
+          // this.logicDisplay[tempD]++
 
           // 当前指定跳题与下一个跳题控制之间的其他题显示
           const i = this.ids.indexOf(tempD)
@@ -700,10 +680,11 @@ export default {
             const gotoId = nextList.iID
             const nextGoto = nextList.iOptions.filter(o => o.goto)
             if (!nextGoto.length) {
-              if (tempD !== gotoId && this.logicDisplay.hasOwnProperty(gotoId)) {
-                this.logicDisplay[gotoId]++
-              }
+              // 非逻辑题
+              this.logicDisplay.hasOwnProperty(gotoId) && this.logicDisplay[gotoId]++
             } else {
+              // 包含该逻辑题
+              this.logicDisplay.hasOwnProperty(gotoId) && this.logicDisplay[gotoId]++
               return false
             }
           }

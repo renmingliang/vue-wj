@@ -107,7 +107,12 @@
           </el-table-column>
           <el-table-column
             prop="region"
-            label="地区"
+            label="省份"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            prop="city"
+            label="城市"
             align="center">
           </el-table-column>
           <el-table-column
