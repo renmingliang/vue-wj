@@ -14,11 +14,11 @@
         <span class="username">{{username}}</span>
       </div>
       <div class="control-wrap">
-        <div class="control-item toggle-screen">
+        <!-- <div class="control-item toggle-screen">
           <screenfull :width="16" :height="16" class="screenfull">
             <span>全屏切换</span>
           </screenfull>
-        </div>
+        </div> -->
         <!-- <div class="control-item edit-password" @click="dialogFormVisible = true">
           <div>修改密码</div>
         </div> -->
