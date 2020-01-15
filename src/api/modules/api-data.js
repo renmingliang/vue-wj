@@ -11,6 +11,6 @@ export default {
     method: 'post',
     url: InterFaceUrl('/data/answer'),
     data: data,
-    toast: false
+    toast: true
   })
 }
