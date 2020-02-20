@@ -17,15 +17,10 @@ export function param2Obj(str) {
 }
 
 /**
- * 深度拷贝对象-利用es6延展符
+ * 深度拷贝对象
  */
 export function deepClone(params) {
-  if (Array.isArray(params)) {
-    let [ ...arr ] = params
-    return arr
-  } else {
-    return JSON.parse(JSON.stringify(params))
-  }
+  return JSON.parse(JSON.stringify(params))
 }
 
 /**
